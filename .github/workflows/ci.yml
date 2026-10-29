@@ -1,0 +1,22 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    runs-on: macos-15
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build
+        run: swift build
+      - name: Safety self-test
+        run: |
+          git config --global user.email "ci@example.com"
+          git config --global user.name "CI"
+          .build/debug/SpawnSweep --selftest

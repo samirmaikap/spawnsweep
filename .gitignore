@@ -1,0 +1,20 @@
+.build/
+.build-agents/
+build/
+.swiftpm/
+*.xcodeproj/
+xcuserdata/
+.DS_Store
+
+# SpawnSweep Pro lives in its own private repo, cloned here
+Sources/SpawnSweep/Pro
+docs/superpowers/
+.superpowers/
+
+# Signing and notarization secrets: never commit these
+.env*
+*.p8
+*.p12
+*.cer
+*.mobileprovision
+*.provisionprofile
