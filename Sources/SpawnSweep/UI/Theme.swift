@@ -817,7 +817,7 @@ struct AppMark: View {
                            .shadow(.inner(color: .black.opacity(0.35), radius: size * 0.05, x: -size * 0.02, y: -size * 0.03)))
                 // Same 1-pixel trim as ClayBackground: gradient + inner shadow leaves a bright fringe on curves.
                 .clipShape(shape.inset(by: max(0.5, size * 0.002)))
-            Moon(size: size * 0.44, rings: true)
+            Moon(size: size * 0.58, rings: true)
         }
         .frame(width: size, height: size)
         .accessibilityHidden(true)
