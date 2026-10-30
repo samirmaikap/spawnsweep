@@ -187,6 +187,8 @@ extension CLI {
                == ["Skipped 3 DerivedData items: Xcode is open. Quit it first.", "Skipped Caches · Foo: it changed since the scan.",
                    "Docker didn't stop.", "Couldn't remove 2 items: denied"], "repeated skips weren't grouped")
         assert(DialogView.grouped(["Skipped A · x: changed", "Skipped B · y: changed"]).count == 2, "different categories were merged")
+        assert(SessionsPage.runningLine(total: 5, loose: 4) == "5 things running: 1 in active or pinned sessions, 4 not tied to an agent session.")
+        assert(SessionsPage.runningLine(total: 1, loose: 1) == "1 thing running: 1 not tied to an agent session.")
         // Every screen counts ports from one list: Docker stacks' ports included, each port once, sorted by first port.
         var ws = Workspace()
         ws.unattached = [Resource(id: "stack:db", kind: .stack, title: "db stack", detail: "", ports: [5431, 8080]),

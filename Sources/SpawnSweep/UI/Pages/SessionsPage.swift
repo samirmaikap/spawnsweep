@@ -40,9 +40,7 @@ struct SessionsPage: View {
                             Text(Self.counted(attention.count, "finished session") + ". " + Self.counted(running, "running resource") + ".")
                             Text("Put them to rest. Keep every line of work.")
                         } else if elsewhere > 0 {
-                            Text(Self.counted(elsewhere, "thing") + " running: "
-                                 + [elsewhere - loose > 0 ? "\(elsewhere - loose) in active or pinned sessions" : nil,
-                                    loose > 0 ? "\(loose) not tied to an agent session" : nil].compactMap { $0 }.joined(separator: ", ") + ".")
+                            Text(Self.runningLine(total: elsewhere, loose: loose))
                             if storage { Text(Self.diskLine(model.reclaimableDisk)) }
                         } else if storage {
                             Text(Self.diskLine(model.reclaimableDisk))
@@ -66,6 +64,17 @@ struct SessionsPage: View {
                 Moon(size: 130).frame(width: 190, height: 150)
             }
         }
+    }
+
+    /// "5 things running: 1 in active or pinned sessions, 4 not tied to an agent session." Split into typed steps:
+    /// as one expression it took CI's compiler too long to type-check.
+    static func runningLine(total: Int, loose: Int) -> String {
+        var parts: [String] = []
+        let inSessions: Int = total - loose
+        if inSessions > 0 { parts.append("\(inSessions) in active or pinned sessions") }
+        if loose > 0 { parts.append("\(loose) not tied to an agent session") }
+        let head: String = counted(total, "thing")
+        return head + " running: " + parts.joined(separator: ", ") + "."
     }
 
     /// What `reclaimableDisk` adds up: rebuildable worktree folders, orphaned Xcode build data and month-old simulators.
