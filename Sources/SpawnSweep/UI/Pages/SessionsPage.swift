@@ -25,8 +25,12 @@ struct SessionsPage: View {
     private var hero: some View {
         let attention = model.attentionSessions
         let running = attention.reduce(0) { $0 + $1.resources.count }
+        let ws = model.workspace
+        // Same count as the menu bar: everything running, whether a session owns it or not.
+        let elsewhere = ws.allResources.count - running, loose = ws.unattached.count
         let storage = attention.isEmpty && model.reclaimableDisk >= 1_000_000_000
-        let title = !attention.isEmpty ? "A clean finish.\nA fresh start." : storage ? "Nothing left running." : "All quiet."
+        let title = !attention.isEmpty ? "A clean finish.\nA fresh start."
+            : elsewhere > 0 ? "Nothing to put away." : storage ? "Nothing left running." : "All quiet."
         return HeroCard {
             HStack(spacing: 32) {
                 VStack(alignment: .leading, spacing: 0) {
@@ -35,8 +39,13 @@ struct SessionsPage: View {
                         if !attention.isEmpty {
                             Text(Self.counted(attention.count, "finished session") + ". " + Self.counted(running, "running resource") + ".")
                             Text("Put them to rest. Keep every line of work.")
+                        } else if elsewhere > 0 {
+                            Text(Self.counted(elsewhere, "thing") + " running: "
+                                 + [elsewhere - loose > 0 ? "\(elsewhere - loose) in active or pinned sessions" : nil,
+                                    loose > 0 ? "\(loose) not tied to an agent session" : nil].compactMap { $0 }.joined(separator: ", ") + ".")
+                            if storage { Text(Self.diskLine(model.reclaimableDisk)) }
                         } else if storage {
-                            Text("\(Fmt.bytes(model.reclaimableDisk)) on disk can be slimmed or recycled without touching code.")
+                            Text(Self.diskLine(model.reclaimableDisk))
                         } else {
                             Text("Every session is active, pinned, or already put away.")
                         }
@@ -47,6 +56,8 @@ struct SessionsPage: View {
                     .padding(.top, 18)
                     if !attention.isEmpty {
                         heroButton("Review cleanup") { model.reviewSweep() }
+                    } else if loose > 0 {
+                        heroButton("Review what's running") { model.go(ws.unattached.contains { !$0.ports.isEmpty } ? .ports : .resources) }
                     } else if storage {
                         heroButton("Review storage") { model.go(.storage) }
                     }
@@ -55,6 +66,11 @@ struct SessionsPage: View {
                 Moon(size: 130).frame(width: 190, height: 150)
             }
         }
+    }
+
+    /// What `reclaimableDisk` adds up: rebuildable worktree folders, orphaned Xcode build data and month-old simulators.
+    static func diskLine(_ bytes: Int64) -> String {
+        "\(Fmt.bytes(bytes)) of dependency folders, old build data and unused simulators can go without touching code."
     }
 
     private func heroButton(_ title: String, action: @escaping () -> Void) -> some View {
@@ -71,8 +87,9 @@ struct SessionsPage: View {
     // MARK: Stat strip
 
     private var stats: some View {
-        statStrip(StatBlock(value: Fmt.bytes(model.memoryToFree), label: "Memory to free"),
-                  StatBlock(value: String(model.sweepResources.count), label: "Resources to stop"),
+        // The first two are exactly what "Review cleanup" stops: finished sessions' leftovers, not everything running.
+        statStrip(StatBlock(value: Fmt.bytes(model.memoryToFree), label: "Memory a cleanup frees"),
+                  StatBlock(value: String(model.sweepResources.count), label: "Left by finished sessions"),
                   // A rescan keeps the last measured number on screen; "…" only before anything was ever measured.
                   StatBlock(value: model.diskUpdatedAt == nil ? "…" : Fmt.bytes(model.reclaimableDisk), label: "Recoverable on disk"))
     }
@@ -131,13 +148,14 @@ struct SessionsPage: View {
             HStack {
                 HStack(spacing: 0) {
                     Text("Sessions").font(.system(size: 15, weight: .medium)).foregroundStyle(Theme.text)
-                    Text(" · " + String(all.count) + " on this Mac").font(.system(size: 15)).foregroundStyle(Theme.secondary)
+                    Text(" · " + String(all.count) + " with something running").font(.system(size: 15)).foregroundStyle(Theme.secondary)
                 }
                 Spacer()
                 ChipTabs(selection: $filter, options: [(.all, "All"), (.attention, "Needs attention")])
             }
             if all.isEmpty {
-                EmptyState(symbol: "moon", title: "Nothing left running.", message: "Agent sessions and what they start will appear here.")
+                EmptyState(symbol: "moon", title: "No agent session has anything running.",
+                           message: "When an agent starts a server, watcher, simulator or Docker stack, it shows up here with its session.")
             } else if shown.isEmpty {
                 EmptyState(symbol: "checkmark", title: "Nothing needs attention.", message: "Every session is active, pinned, or already put away.")
             } else {

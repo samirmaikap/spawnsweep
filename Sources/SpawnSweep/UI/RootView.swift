@@ -154,7 +154,7 @@ struct SidebarItem: View {
     private var count: (Int, Bool)? {
         switch page {
         case .sessions: let n = model.attentionSessions.count; return n > 0 ? (n, true) : nil
-        case .ports: let n = model.workspace.servers.count; return n > 0 ? (n, false) : nil
+        case .ports: let n = model.workspace.openPorts.count; return n > 0 ? (n, false) : nil
         case .recycle: return model.bin.isEmpty ? nil : (model.bin.count, false)
         default: return nil
         }

@@ -9,15 +9,11 @@ struct MenuBarView: View {
         let ws = model.workspace
         let sessions = ws.sessions.filter { !$0.resources.isEmpty }
             .sorted { ($0.needsAttention ? 0 : 1, $0.project) < ($1.needsAttention ? 0 : 1, $1.project) }
-        let attached = Set(sessions.flatMap(\.resources).compactMap(\.udid))
-        // Stacks already shown through a session or as an unattached resource aren't listed a second time.
-        let stackNames = Set((sessions.flatMap(\.resources) + ws.unattached).compactMap(\.stackProject))
-        let looseSims = ws.devices.filter { $0.booted && !attached.contains($0.udid) }
-        let looseStacks = ws.stacks.filter { !stackNames.contains($0.project) }
-        let quiet = sessions.isEmpty && ws.unattached.isEmpty && looseSims.isEmpty && looseStacks.isEmpty
+        // Booted simulators and Docker stacks are already resources (in a session or unattached), so this is everything.
+        let quiet = ws.allResources.isEmpty
 
         VStack(alignment: .leading, spacing: 14) {
-            header(running: sessions.count + ws.unattached.count + looseSims.count + looseStacks.count)
+            header(running: ws.allResources.count)
             stats
 
             if quiet {
@@ -41,20 +37,6 @@ struct MenuBarView: View {
                                 ForEach(ws.unattached) { r in
                                     row(symbol: r.kind.symbol, title: label(r), detail: Fmt.bytes(r.memoryBytes)) {
                                         Button(r.kind == .server ? "Free" : "Stop") { open { model.reviewStop(r) } }.buttonStyle(.quiet)
-                                    }
-                                }
-                            }
-                        }
-                        if !looseSims.isEmpty || !looseStacks.isEmpty {
-                            group(title: "Also running") {
-                                ForEach(looseSims) { d in
-                                    row(symbol: "iphone", title: d.name, detail: d.runtime) {
-                                        Button("Review") { open { model.go(.resources) } }.buttonStyle(.quiet)
-                                    }
-                                }
-                                ForEach(looseStacks) { st in
-                                    row(symbol: "shippingbox", title: st.project, detail: "\(st.containers.count) container\(st.containers.count == 1 ? "" : "s")") {
-                                        Button("Review") { open { model.go(.resources) } }.buttonStyle(.quiet)
                                     }
                                 }
                             }
@@ -116,7 +98,7 @@ struct MenuBarView: View {
     private var stats: some View {
         let ws = model.workspace
         return HStack(spacing: 10) {
-            stat("network", .sky, "\(Set(ws.allResources.flatMap(\.ports)).count)", "Ports open")
+            stat("network", .sky, "\(ws.openPorts.count)", "Dev ports open")
             let mem = model.system.memory, vol = model.system.volume
             stat("memorychip", mem.pressure == .normal ? .lilac : .peach,
                  mem.total > 0 ? "\(Fmt.memory(mem.used)) / \(Fmt.memory(mem.total))" : "…",

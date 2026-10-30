@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Every listening dev server, attached to an agent session or not.
+/// Everything listening on a port (dev servers and Docker stacks), attached to an agent session or not.
 struct PortsPage: View {
     @Environment(AppModel.self) private var model
     @State private var query = ""
@@ -38,8 +38,8 @@ struct PortsPage: View {
                 }
                 .accessibilityElement(children: .ignore)
                 .accessibilityLabel("Checking which ports are open")
-            } else if servers.isEmpty {
-                EmptyState(symbol: "point.3.connected.trianglepath.dotted", title: "No ports open.", message: "Dev servers your agents and you start will appear here.")
+            } else if listening.isEmpty {
+                EmptyState(symbol: "point.3.connected.trianglepath.dotted", title: "No ports open.", message: "Dev servers and Docker stacks your agents and you start will appear here.")
             } else if shown.isEmpty {
                 EmptyState(symbol: "magnifyingglass", title: filter == .ended ? "No ports from ended sessions." : "No matching ports.",
                            message: "Try a port number or project name.")
@@ -53,13 +53,13 @@ struct PortsPage: View {
 
     private let columns = [GridItem(.flexible(), spacing: 16), GridItem(.flexible(), spacing: 16)]
 
-    private var servers: [Resource] {
-        model.workspace.servers.filter { !$0.ports.isEmpty }.sorted { $0.ports[0] < $1.ports[0] }
+    private var listening: [Resource] {
+        model.workspace.portResources
     }
 
     private var shown: [Resource] {
         let q = query.trimmingCharacters(in: .whitespaces).replacingOccurrences(of: ":", with: "").lowercased()
-        return servers.filter { r in
+        return listening.filter { r in
             let owner = model.workspace.session(for: r)
             if filter == .ended, owner?.state.isEnded != true { return false }
             if q.isEmpty { return true }
@@ -113,7 +113,7 @@ private struct PortCard: View {
                             .disabled(true)
                             .help(pinned ? "This session is pinned. Unpin it to free the port." : "Unprotect the port from this card's menu.")
                     } else {
-                        Button("Free port") { model.reviewStop(r) }.buttonStyle(.quiet)
+                        Button(r.kind == .server ? "Free port" : "Stop") { model.reviewStop(r) }.buttonStyle(.quiet)
                     }
                 }
                 .padding(.top, 18)

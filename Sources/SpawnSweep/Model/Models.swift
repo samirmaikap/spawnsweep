@@ -146,8 +146,16 @@ struct Workspace {
     var tunnels: [Tunnel] = []
     var scannedAt: Date = .distantPast
 
+    /// Everything running that SpawnSweep tracks (booted simulators and Docker stacks are resources too).
+    /// Every "running" count on screen is this list's count.
     var allResources: [Resource] { sessions.flatMap(\.resources) + unattached }
-    var servers: [Resource] { allResources.filter { $0.kind == .server } }
+    /// Everything with a listening port, Docker stacks included, ordered by first port (ties keep scan order).
+    var portResources: [Resource] {
+        allResources.enumerated().filter { !$0.element.ports.isEmpty }
+            .sorted { ($0.element.ports[0], $0.offset) < ($1.element.ports[0], $1.offset) }.map(\.element)
+    }
+    /// Every port count on screen is this set's count.
+    var openPorts: Set<Int> { Set(portResources.flatMap(\.ports)) }
 
     func session(for resource: Resource) -> Session? {
         sessions.first { $0.resources.contains { $0.id == resource.id } }

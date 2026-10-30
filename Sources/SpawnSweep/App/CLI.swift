@@ -132,6 +132,8 @@ enum CLI {
         print("UNATTACHED")
         for r in ws.unattached { print("   \(r.kind.rawValue) \(r.title) · \(r.detail) · cwd=\(r.cwd ?? "-")") }
         print("DEVICES booted=\(ws.devices.filter(\.booted).map(\.name))  STACKS=\(ws.stacks.map { "\($0.project)(\($0.containers.count))" })  TUNNELS=\(ws.tunnels.count)")
+        // The two numbers every screen shows, so they can be checked against the app.
+        print("RUNNING \(ws.allResources.count)  DEV PORTS \(ws.openPorts.count) \(ws.openPorts.sorted())")
     }
 }
 
@@ -178,6 +180,14 @@ extension CLI {
         assert(Scanner.agent(of: proc("/usr/bin/python3", "/usr/bin/python3 app.py"), table: table) == nil)
         // Folder boundaries: a Docker stack in /app-db doesn't belong to a session in /app.
         assert(Scanner.inside("/s/app", "/s/app") && Scanner.inside("/s/app/api", "/s/app") && !Scanner.inside("/s/app-db", "/s/app"))
+        // Every screen counts ports from one list: Docker stacks' ports included, each port once, sorted by first port.
+        var ws = Workspace()
+        ws.unattached = [Resource(id: "stack:db", kind: .stack, title: "db stack", detail: "", ports: [5431, 8080]),
+                         Resource(id: "srv", kind: .server, title: "Vite :3101", detail: "", ports: [3101]),
+                         Resource(id: "dup", kind: .server, title: "Node :3101", detail: "", ports: [3101]),
+                         Resource(id: "sim:1", kind: .simulator, title: "iPhone", detail: "")]
+        assert(ws.openPorts == [3101, 5431, 8080], "a Docker port or a shared port was miscounted")
+        assert(ws.portResources.map(\.id) == ["srv", "dup", "stack:db"], "port list isn't every resource with a port, by port")
         // Removing the hook takes only SpawnSweep's entry; another tool's hook in the same group stays.
         let other: [String: Any] = ["type": "command", "command": "/usr/local/bin/notify --done"]
         let groups: [[String: Any]] = [["hooks": [["type": "command", "command": Integrations.hookCommand], other]],

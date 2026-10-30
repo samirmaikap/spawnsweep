@@ -126,7 +126,7 @@ struct SafetyPage: View {
     }
 
     private func portContext(_ port: Int) -> String {
-        guard let r = model.workspace.servers.first(where: { $0.ports.contains(port) }) else {
+        guard let r = model.workspace.portResources.first(where: { $0.ports.contains(port) }) else {
             return "Protected port · nothing is listening right now"
         }
         return "Protected port · \(r.title)" + (model.workspace.session(for: r).map { " · \($0.project)" } ?? "")
