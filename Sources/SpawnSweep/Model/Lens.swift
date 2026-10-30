@@ -4,10 +4,81 @@ import CoreGraphics
 /// What a Space Lens item is. It decides the moon's color and what you can do with it.
 enum LensKind: String, Sendable {
     case project       // a folder with .git or package.json
-    case rebuildable   // node_modules, .next, build output… inside a repo: tools make it again
+    case rebuildable   // node_modules, .next, build output inside a repo, and known tool caches: tools make it again
     case yourFiles     // documents, media, downloads, anything else you made
     case appData       // ~/Library and the dot folders in your home folder
+    case apps          // /Applications
+    case system        // macOS and shared system folders
+    case unmeasured    // space the disk uses that no folder accounts for: snapshots, purgeable, hidden system data
     case other
+}
+
+/// The whole disk, measured once: folder sizes as far down as the scan went, which folders were skipped, and how
+/// full the disk is. Browsing reads from here, so it's instant; deeper folders are measured when opened.
+struct LensMap: Sendable {
+    var sizes: [String: Int64] = [:]
+    var children: [String: [String]] = [:]
+    var locked: Set<String> = []
+    /// Folders that are a repository (they have a .git folder), for "holds repositories" checks.
+    var repos: Set<String> = []
+    var diskTotal: Int64 = 0
+    var diskUsed: Int64 = 0
+    var cancelled = false
+
+    /// Fills `children` and `repos` from `sizes`; call once after the scan.
+    mutating func index() {
+        children = [:]; repos = []
+        for path in sizes.keys where path != "/" {
+            let parent = (path as NSString).deletingLastPathComponent
+            children[parent, default: []].append(path)
+            if (path as NSString).lastPathComponent == ".git" { repos.insert(parent) }
+        }
+    }
+
+    func containsRepo(_ path: String) -> Bool { repos.contains { $0 == path || $0.hasPrefix(path + "/") } }
+
+    /// After something goes to the Trash: it disappears and every folder above it shrinks by its size.
+    mutating func remove(_ path: String, bytes: Int64) {
+        for key in sizes.keys where key == path || key.hasPrefix(path + "/") { sizes[key] = nil }
+        var dir = (path as NSString).deletingLastPathComponent
+        while true {
+            if let s = sizes[dir] { sizes[dir] = max(0, s - bytes) }
+            if dir == "/" || dir.isEmpty { break }
+            dir = (dir as NSString).deletingLastPathComponent
+        }
+        let parent = (path as NSString).deletingLastPathComponent
+        children[parent]?.removeAll { $0 == path }
+        diskUsed = max(0, diskUsed - bytes)
+    }
+}
+
+/// What the scan is doing right now, for the scanning screen.
+struct LensProgress: Sendable {
+    var path = ""
+    var bytes: Int64 = 0
+    var fraction = 0.0
+}
+
+/// Stops a running scan: no new folders start, and the `du` processes already running are ended.
+final class LensScan: @unchecked Sendable {
+    private let lock = NSLock()
+    private var cancelled = false
+    private var running: [Process] = []
+
+    var isCancelled: Bool { lock.lock(); defer { lock.unlock() }; return cancelled }
+
+    /// Registers a process to end on cancel. False (and the process is ended) if the scan was already cancelled.
+    func track(_ p: Process) -> Bool {
+        lock.lock(); defer { lock.unlock() }
+        if cancelled { return false }
+        running.append(p)
+        return true
+    }
+
+    func cancel() {
+        lock.lock(); cancelled = true; let ps = running; running = []; lock.unlock()
+        for p in ps where p.isRunning { p.terminate() }
+    }
 }
 
 /// One folder or file in Space Lens, measured.

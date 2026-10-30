@@ -13,6 +13,7 @@ enum Entry {
         if args.contains("--mcp") { CLI.mcp(); return }
         if args.contains("--scan") { CLI.printScan(); return }
         if args.contains("--selftest") { CLI.selfTest(); return }
+        if args.contains("--lens") { CLI.printLens(); return }
         if args.contains("--edition") { print(Edition.hasPro ? "pro" : "free"); return }
         if let i = args.firstIndex(of: "--render-icon"), i + 1 < args.count { IconRenderer.render(to: args[i + 1]); return }
         SpawnSweepApp.main()

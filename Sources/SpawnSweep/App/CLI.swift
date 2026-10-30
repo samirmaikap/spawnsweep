@@ -135,6 +135,17 @@ enum CLI {
         // The two numbers every screen shows, so they can be checked against the app.
         print("RUNNING \(ws.allResources.count)  DEV PORTS \(ws.openPorts.count) \(ws.openPorts.sorted())")
     }
+
+    /// `--lens`: Space Lens's whole-disk map, top level only, so its numbers can be checked against the disk.
+    static func printLens() {
+        guard let pro = Edition.pro else { print("Space Lens is part of SpawnSweep Pro."); return }
+        let started = Date(), scan = LensScan()
+        let map = pro.lensMap(scan: scan) { _ in }
+        for n in pro.lensLevel("/", map: map, scan: scan) {
+            print(String(format: "%10@  %@%@", Fmt.bytes(n.bytes), n.name, n.locked ? "  (not measured)" : ""))
+        }
+        print("DISK \(Fmt.bytes(map.diskUsed)) used of \(Fmt.bytes(map.diskTotal))  FULL DISK ACCESS \(LensAccess.full ? "yes" : "no")  LOCKED \(map.locked.count)  FOLDERS \(map.sizes.count)  \(Int(Date().timeIntervalSince(started)))s")
+    }
 }
 
 extension CLI {
@@ -193,6 +204,17 @@ extension CLI {
         assert(refused("code/repo") && refused("code/repo/.git/objects"), "a git repository was allowed")
         assert(refused("code/plain", busy: [fakeHome + "/code/plain/app"]), "a folder something runs in was allowed")
         assert(!refused("code/plain") && !refused("Documents/notes.txt"), "a plain folder or file was refused")
+        // Whole-disk Remove: inside a repo only rebuildable folders; repo containers and worktrees never; dot folders only known caches.
+        for d in ["code/repo/src", "code/repo/node_modules/x", "code/repo/.claude/worktrees/wt", ".npm/_cacache", ".gradle/caches", ".ssh/keys"] {
+            try? fm0.createDirectory(atPath: fakeHome + "/" + d, withIntermediateDirectories: true)
+        }
+        fm0.createFile(atPath: fakeHome + "/code/repo/.claude/worktrees/wt/.git", contents: Data("gitdir: x".utf8))
+        assert(refused("code/repo/src"), "code inside a repo was allowed")
+        assert(!refused("code/repo/node_modules"), "node_modules inside a repo was refused")
+        assert(refused("code/repo/.claude/worktrees") && refused("code/repo/.claude/worktrees/wt"), "a worktree or its container was allowed")
+        assert(!refused(".npm") && !refused(".gradle/caches"), "a known tool cache was refused")
+        assert(refused(".gradle") && refused(".ssh/keys"), "a settings folder or something inside one was allowed")
+        assert(Actions.containsGit(fakeHome + "/code") && !Actions.containsGit(fakeHome + "/Documents"), "a folder holding repositories wasn't spotted")
         try? fm0.removeItem(atPath: fakeHome)
         // Moons never overlap, and the same sizes always pack the same way.
         let radii: [CGFloat] = (0..<30).map { (i: Int) -> CGFloat in CGFloat((i * 37) % 41 + 4) }.sorted(by: >)

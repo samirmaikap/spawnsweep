@@ -597,38 +597,31 @@ final class AppModel {
 
     // MARK: - Space Lens
 
-    /// Idle agent worktrees inside `node` that Slim can shrink. Slim's own checks run again when it acts.
-    func lensSlimmable(_ node: LensNode) -> [Worktree] {
-        guard node.isDir, node.kind != .appData else { return [] }
-        return disk.worktrees.filter { ($0.path == node.path || $0.path.hasPrefix(node.path + "/")) && $0.status != .inUse && ($0.slimBytes ?? 0) > 0 }
-    }
-
-    /// What Space Lens calls safe to clear: a rebuildable folder itself, or what Slim would free inside a folder.
-    func lensSafeBytes(_ node: LensNode) -> Int64 {
-        if node.kind == .rebuildable { return node.bytes }
-        return lensSlimmable(node).reduce(0) { $0 + ($1.slimBytes ?? 0) }
-    }
-
-    func reviewLensTrash(_ n: LensNode) {
-        var spec = DialogSpec(icon: "trash", title: "Move \(n.name) to the Trash?",
-                              subtitle: "About \(Fmt.bytes(n.bytes)) comes back once you empty the Trash.",
-                              items: [DialogItem(id: n.path, label: n.name, detail: Fmt.bytes(n.bytes), required: true)],
-                              notes: [n.kind == .rebuildable ? "Tools make it again when you need it, for example with npm install."
-                                      : "It stays in the Trash until you empty it, so you can still put it back."],
+    /// Remove in Space Lens: the ticked items, previewed, then to the Trash. Each is checked again as it goes.
+    func reviewLensRemove(_ nodes: [LensNode]) {
+        let list = nodes.sorted { $0.bytes > $1.bytes }
+        let total = list.reduce(Int64(0)) { $0 + $1.bytes }
+        guard !list.isEmpty else { return }
+        var spec = DialogSpec(icon: "trash",
+                              title: list.count == 1 ? "Move \(list[0].name) to the Trash?" : "Move \(list.count) items to the Trash?",
+                              subtitle: "About \(Fmt.bytes(total)) comes back once you empty the Trash.",
+                              items: list.map { n in
+                                  let folder = (n.path as NSString).deletingLastPathComponent.replacingOccurrences(of: Shell.home, with: "~")
+                                  return DialogItem(id: n.path, label: n.name, detail: "\(Fmt.bytes(n.bytes)) · \(folder)")
+                              },
+                              notes: ["Each item is checked again first. They stay in the Trash until you empty it, so you can put any back."],
                               confirmTitle: "Move to Trash")
-        spec.activityTitle = "Moved \(n.name) to the Trash"
-        spec.runningNote = "Checking it again, then moving it."
-        if let why = Actions.trashRefusal(n.path) {
-            spec.warning = why; spec.action = nil; spec.confirmTitle = "OK"
-        } else {
-            let lens = self.lens
-            spec.action = { _ in
-                let o = Actions.trash([(n.path, n.bytes)])
-                Task { @MainActor in if !FileManager.default.fileExists(atPath: n.path) { lens.drop(n.path) } }
-                return o
-            }
-            spec.lockForPro(self)
+        spec.activityTitle = "Moved \(list.count) item\(list.count == 1 ? "" : "s") to the Trash"
+        spec.runningNote = "Checking each item again, then moving it."
+        let lens = self.lens
+        spec.action = { chosen in
+            let picked = list.filter { chosen.contains($0.path) }
+            let o = Actions.trash(picked.map { ($0.path, $0.bytes) })
+            let gone = picked.filter { !FileManager.default.fileExists(atPath: $0.path) }
+            Task { @MainActor in lens.removed(gone) }
+            return o
         }
+        spec.lockForPro(self)
         present(spec)
     }
 

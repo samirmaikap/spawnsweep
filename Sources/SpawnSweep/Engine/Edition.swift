@@ -11,9 +11,10 @@ protocol ProFeatures: AnyObject, Sendable {
     func trash(_ files: [LargeFile]) -> Actions.Outcome
     /// `rules` are those whose effective mode is .ask or .auto, with their fresh matches.
     @MainActor func act(_ model: AppModel, _ rules: [(Rule, [RuleMatch])])
-    /// Space Lens: `path`'s children, measured and classified. Calls `update` as sizes arrive (largest first, with how
-    /// many items there are in all), the last time with `done` true. Blocks until then, so call it off the main thread.
-    func lensChildren(of path: String, update: @escaping @Sendable (_ nodes: [LensNode], _ total: Int, _ done: Bool) -> Void)
+    /// Space Lens: measures the whole disk once. Blocks until done or `scan` is cancelled, so call it off the main thread.
+    func lensMap(scan: LensScan, progress: @escaping @Sendable (LensProgress) -> Void) -> LensMap
+    /// Space Lens: one folder's contents, sized from `map` (or measured now if the scan didn't go that deep) and classified.
+    func lensLevel(_ path: String, map: LensMap, scan: LensScan) -> [LensNode]
     func selfTest()
 }
 

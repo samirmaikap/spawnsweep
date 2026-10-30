@@ -309,11 +309,41 @@ enum Actions {
         let parts = p.dropFirst(h.count + 1).split(separator: "/").map(String.init)
         if parts.first == "Library", parts.count > 1 { return "It's app data. Junk clears the parts that are safe to remove." }
         if parts.count == 1, standardFolders.contains(parts[0]) { return "It's one of your Mac's standard folders." }
-        if parts.count == 1, parts[0].hasPrefix(".") { return "It holds settings or keys for your tools." }
+        if let first = parts.first, first.hasPrefix(".") {
+            let rel = parts.joined(separator: "/")
+            guard toolCaches.contains(where: { rel == $0 || rel.hasPrefix($0 + "/") }) else { return "It holds settings or keys for your tools." }
+        }
         if parts.contains(".git") { return "It's part of a git repository's history." }
-        if FileManager.default.fileExists(atPath: p + "/.git") { return "It's a git repository. Slim frees its rebuildable space and keeps your code." }
+        let fm = FileManager.default
+        if fm.fileExists(atPath: p + "/.git") { return "It's a git repository. Open it and remove only what's safe to clear." }
+        // Inside a repository or worktree, only rebuildable folders can go; code, history and worktrees stay.
+        var dir = (p as NSString).deletingLastPathComponent
+        while dir.hasPrefix(h + "/") {
+            if fm.fileExists(atPath: dir + "/.git") {
+                if !DiskScanner.slimNames.contains((p as NSString).lastPathComponent) {
+                    return "It's part of a git repository. Only rebuildable folders like node_modules can go."
+                }
+                break
+            }
+            dir = (dir as NSString).deletingLastPathComponent
+        }
         if (busy ?? busyFolders()).contains(where: { $0 == p || $0.hasPrefix(p + "/") }) { return "Something is running in it." }
         return nil
+    }
+
+    /// Dot folders (relative to home) that only hold tool caches, so they can go whole. Everything else under a dot
+    /// folder is settings or keys and stays.
+    static let toolCaches: [String] = [".npm", ".cache", ".cocoapods", ".gradle/caches"]
+
+    /// Whether `path` holds a git repository or worktree a few levels down. Rebuildable folders aren't searched.
+    static func containsGit(_ path: String, maxDepth: Int = 6) -> Bool {
+        guard let e = FileManager.default.enumerator(at: URL(fileURLWithPath: path), includingPropertiesForKeys: nil,
+                                                     options: [.skipsPackageDescendants]) else { return false }
+        for case let url as URL in e {
+            if url.lastPathComponent == ".git" { return true }
+            if e.level >= maxDepth || DiskScanner.slimNames.contains(url.lastPathComponent) { e.skipDescendants() }
+        }
+        return false
     }
 
     /// Moves Space Lens picks to the Trash, checking each one again first. Recoverable until the Trash is emptied.
@@ -324,6 +354,7 @@ enum Actions {
             let name = (path as NSString).lastPathComponent
             guard FileManager.default.fileExists(atPath: path) else { o.failures.append("\(name) is no longer there."); continue }
             if let why = trashRefusal(path, busy: busy) { o.failures.append("Kept \(name): \(why)"); continue }
+            if containsGit(path) { o.failures.append("Kept \(name): it holds git repositories."); continue }
             do {
                 try FileManager.default.trashItem(at: URL(fileURLWithPath: path), resultingItemURL: nil)
                 o.trashedBytes += bytes
