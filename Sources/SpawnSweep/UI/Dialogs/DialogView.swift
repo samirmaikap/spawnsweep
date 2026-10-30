@@ -108,8 +108,11 @@ struct DialogView: View {
     }
 
     @ViewBuilder private func done(_ failures: [String]) -> some View {
+        let lines = Self.grouped(failures)
         VStack(alignment: .leading, spacing: 10) {
-            ForEach(failures, id: \.self) { WarningBanner(text: $0) }
+            // Same rule as the preview: a long list scrolls in a fixed box, so Done always stays on screen.
+            let list = VStack(spacing: 10) { ForEach(lines, id: \.self) { WarningBanner(text: $0) } }
+            if lines.count > 4 { ScrollView { list }.frame(height: 260) } else { list }
             if !failures.isEmpty {
                 InfoBanner(text: "Anything that couldn't change was left exactly as it was.")
             }
@@ -121,6 +124,31 @@ struct DialogView: View {
             .padding(.top, 14)
         }
         .padding(.top, 20)
+    }
+
+    /// Folds "Skipped DerivedData · A: Xcode is open." and its 24 siblings into "Skipped 25 DerivedData items: Xcode is open.".
+    /// Lines group by verb, category (the part before " · ") and reason; anything else passes through. First-seen order.
+    static func grouped(_ failures: [String]) -> [String] {
+        let verbs = ["Skipped ", "Couldn't remove ", "Kept "]
+        var order: [String] = []
+        var groups: [String: (line: String, verb: String, category: String?, reason: String, count: Int)] = [:]
+        for f in failures {
+            var key = f, verb = "", category: String?, reason = ""
+            if let v = verbs.first(where: f.hasPrefix), let colon = f.range(of: ": ") {
+                verb = v
+                let name = String(f[f.index(f.startIndex, offsetBy: v.count)..<colon.lowerBound])
+                category = name.range(of: " · ").map { String(name[..<$0.lowerBound]) }
+                reason = String(f[colon.upperBound...])
+                key = v + "|" + (category ?? "") + "|" + reason
+            }
+            if groups[key] == nil { order.append(key); groups[key] = (f, verb, category, reason, 0) }
+            groups[key]!.count += 1
+        }
+        return order.map { k in
+            let g = groups[k]!
+            guard g.count > 1, !g.verb.isEmpty else { return g.line }
+            return "\(g.verb)\(g.count) \(g.category.map { "\($0) items" } ?? "items"): \(g.reason)"
+        }
     }
 }
 

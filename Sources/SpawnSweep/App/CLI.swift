@@ -180,6 +180,13 @@ extension CLI {
         assert(Scanner.agent(of: proc("/usr/bin/python3", "/usr/bin/python3 app.py"), table: table) == nil)
         // Folder boundaries: a Docker stack in /app-db doesn't belong to a session in /app.
         assert(Scanner.inside("/s/app", "/s/app") && Scanner.inside("/s/app/api", "/s/app") && !Scanner.inside("/s/app-db", "/s/app"))
+        // A results dialog folds repeated skips into one line per category and reason, in first-seen order.
+        let skips = (1...3).map { "Skipped DerivedData · Runner-\($0): Xcode is open. Quit it first." }
+        assert(DialogView.grouped(skips + ["Skipped Caches · Foo: it changed since the scan.", "Docker didn't stop.",
+                                           "Couldn't remove a.dmg: denied", "Couldn't remove b.dmg: denied"])
+               == ["Skipped 3 DerivedData items: Xcode is open. Quit it first.", "Skipped Caches · Foo: it changed since the scan.",
+                   "Docker didn't stop.", "Couldn't remove 2 items: denied"], "repeated skips weren't grouped")
+        assert(DialogView.grouped(["Skipped A · x: changed", "Skipped B · y: changed"]).count == 2, "different categories were merged")
         // Every screen counts ports from one list: Docker stacks' ports included, each port once, sorted by first port.
         var ws = Workspace()
         ws.unattached = [Resource(id: "stack:db", kind: .stack, title: "db stack", detail: "", ports: [5431, 8080]),
