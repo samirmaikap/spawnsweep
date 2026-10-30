@@ -5,6 +5,7 @@ import AppKit
 struct LicensePanel: View {
     @Environment(AppModel.self) private var model
     @State private var key = ""
+    @FocusState private var keyFocused: Bool
     /// Skips the feature list (the Pro page shows its own); adds a link to it from Settings.
     var compact = false
 
@@ -37,8 +38,13 @@ struct LicensePanel: View {
                 }
             } }
             HStack(spacing: 10) {
-                // Cleaned as it comes in: a pasted "KEY⏎⏎" would otherwise show only its empty last line.
-                TextField("License key from your Dodo Payments email", text: Binding(get: { key }, set: { key = License.cleanKey($0) }))
+                // A key copied from an email arrives as "KEY⏎⏎". The one-line field keeps showing what was pasted (its empty
+                // last line) even after the value is cleaned, so end the edit for a moment to redraw it, then refocus.
+                TextField("License key from your Dodo Payments email", text: Binding(get: { key }, set: { raw in
+                    key = License.cleanKey(raw)
+                    if raw.contains(where: \.isNewline) { keyFocused = false; DispatchQueue.main.async { keyFocused = true } }
+                }))
+                    .focused($keyFocused)
                     .textFieldStyle(.plain).font(.mono(13))
                     .padding(.horizontal, 12).padding(.vertical, 9)
                     .clayInset(radius: 12)
