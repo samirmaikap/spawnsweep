@@ -31,7 +31,7 @@ struct CommandPalette: View {
             out.append(Hit(id: "r:\(g.path)", symbol: "arrow.triangle.branch", title: g.name,
                            detail: "\(g.worktrees.count) worktrees · \(Fmt.bytes(g.totalBytes))") { model.openRepo(g.path) })
         }
-        for p in Page.sidebar + (Edition.hasPro ? [.junk, .largeFiles, .pro] : []) + [.welcome] {
+        for p in Page.sidebar + (Edition.hasPro ? [.junk, .largeFiles, .spaceLens, .pro] : []) + [.welcome] {
             out.append(Hit(id: "g:\(p.rawValue)", symbol: p.symbol, title: p.title, detail: "Go to page") { model.go(p) })
         }
         out.append(Hit(id: "a:sweep", symbol: "moon", title: "End-of-day sweep", detail: "Review what finished sessions left running") {

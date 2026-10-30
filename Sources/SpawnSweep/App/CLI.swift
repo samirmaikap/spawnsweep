@@ -180,6 +180,29 @@ extension CLI {
         assert(Scanner.agent(of: proc("/usr/bin/python3", "/usr/bin/python3 app.py"), table: table) == nil)
         // Folder boundaries: a Docker stack in /app-db doesn't belong to a session in /app.
         assert(Scanner.inside("/s/app", "/s/app") && Scanner.inside("/s/app/api", "/s/app") && !Scanner.inside("/s/app-db", "/s/app"))
+        // Space Lens never trashes anything outside home, app data, standard folders, settings, repos, or busy folders.
+        let fakeHome = NSTemporaryDirectory() + "lens-\(UUID().uuidString)", fm0 = FileManager.default
+        for d in ["Documents", "Library/Caches/x", ".ssh", "code/repo/.git/objects", "code/plain"] {
+            try? fm0.createDirectory(atPath: fakeHome + "/" + d, withIntermediateDirectories: true)
+        }
+        func refused(_ rel: String, busy: [String] = []) -> Bool { Actions.trashRefusal(fakeHome + "/" + rel, home: fakeHome, busy: busy) != nil }
+        assert(Actions.trashRefusal("/etc/hosts", home: fakeHome, busy: []) != nil, "trash allowed outside home")
+        assert(Actions.trashRefusal(fakeHome, home: fakeHome, busy: []) != nil, "the home folder itself was allowed")
+        assert(refused("Library/Caches/x"), "app data was allowed")
+        assert(refused("Documents") && refused(".ssh"), "a standard folder or settings folder was allowed")
+        assert(refused("code/repo") && refused("code/repo/.git/objects"), "a git repository was allowed")
+        assert(refused("code/plain", busy: [fakeHome + "/code/plain/app"]), "a folder something runs in was allowed")
+        assert(!refused("code/plain") && !refused("Documents/notes.txt"), "a plain folder or file was refused")
+        try? fm0.removeItem(atPath: fakeHome)
+        // Moons never overlap, and the same sizes always pack the same way.
+        let radii: [CGFloat] = (0..<30).map { (i: Int) -> CGFloat in CGFloat((i * 37) % 41 + 4) }.sorted(by: >)
+        let pts = Pack.positions(radii, gap: 4)
+        for i in 0..<30 { for j in (i + 1)..<30 {
+            let apart: CGFloat = hypot(pts[i].x - pts[j].x, pts[i].y - pts[j].y)
+            let needed: CGFloat = radii[i] + radii[j] + 3.99
+            assert(apart >= needed, "moons overlap")
+        } }
+        assert(Pack.positions(radii, gap: 4) == pts, "packing isn't deterministic")
         // A results dialog folds repeated skips into one line per category and reason, in first-seen order.
         let skips = (1...3).map { "Skipped DerivedData · Runner-\($0): Xcode is open. Quit it first." }
         assert(DialogView.grouped(skips + ["Skipped Caches · Foo: it changed since the scan.", "Docker didn't stop.",

@@ -95,6 +95,7 @@ extension Page {
         case .mac: return .sky
         case .junk: return .peach
         case .largeFiles: return .sand
+        case .spaceLens: return .sky
         case .pro: return ClayTone(fill: Theme.amberFill, glyph: Theme.proGold)
         case .storage, .activity: return .sand
         case .recycle: return .peach

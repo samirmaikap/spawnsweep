@@ -295,4 +295,42 @@ enum Actions {
             bin.removeAll { $0.removedAt < cutoff }
         }
     }
+    // MARK: - Space Lens
+
+    /// The home folder's own top-level folders. Their contents can go; the folders themselves stay.
+    static let standardFolders: Set<String> = ["Desktop", "Documents", "Downloads", "Movies", "Music", "Pictures", "Public", "Applications", "Library"]
+
+    /// Why `path` can't go to the Trash from Space Lens, or nil if it can. Checked when you ask and again right before the move.
+    /// Links are resolved first, so a link inside your home folder that points elsewhere counts as elsewhere.
+    static func trashRefusal(_ path: String, home: String = Shell.home, busy: [String]? = nil) -> String? {
+        let h = URL(fileURLWithPath: home).resolvingSymlinksInPath().path
+        let p = URL(fileURLWithPath: path).resolvingSymlinksInPath().path
+        guard p.hasPrefix(h + "/") else { return "It's outside your home folder." }
+        let parts = p.dropFirst(h.count + 1).split(separator: "/").map(String.init)
+        if parts.first == "Library", parts.count > 1 { return "It's app data. Junk clears the parts that are safe to remove." }
+        if parts.count == 1, standardFolders.contains(parts[0]) { return "It's one of your Mac's standard folders." }
+        if parts.count == 1, parts[0].hasPrefix(".") { return "It holds settings or keys for your tools." }
+        if parts.contains(".git") { return "It's part of a git repository's history." }
+        if FileManager.default.fileExists(atPath: p + "/.git") { return "It's a git repository. Slim frees its rebuildable space and keeps your code." }
+        if (busy ?? busyFolders()).contains(where: { $0 == p || $0.hasPrefix(p + "/") }) { return "Something is running in it." }
+        return nil
+    }
+
+    /// Moves Space Lens picks to the Trash, checking each one again first. Recoverable until the Trash is emptied.
+    static func trash(_ items: [(path: String, bytes: Int64)]) -> Outcome {
+        var o = Outcome()
+        let busy = busyFolders()
+        for (path, bytes) in items {
+            let name = (path as NSString).lastPathComponent
+            guard FileManager.default.fileExists(atPath: path) else { o.failures.append("\(name) is no longer there."); continue }
+            if let why = trashRefusal(path, busy: busy) { o.failures.append("Kept \(name): \(why)"); continue }
+            do {
+                try FileManager.default.trashItem(at: URL(fileURLWithPath: path), resultingItemURL: nil)
+                o.trashedBytes += bytes
+            } catch {
+                o.failures.append("Couldn't move \(name) to the Trash: \(error.localizedDescription)")
+            }
+        }
+        return o
+    }
 }

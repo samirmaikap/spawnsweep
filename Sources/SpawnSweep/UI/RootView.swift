@@ -61,6 +61,7 @@ struct RootView: View {
         case .mac: MacOverviewPage()
         case .junk: JunkPage()
         case .largeFiles: LargeFilesPage()
+        case .spaceLens: SpaceLensPage()
         case .storage:
             if let repo = model.repoDetail { WorktreeDetailPage(repoPath: repo) } else { StoragePage() }
         case .recycle: RecyclePage()

@@ -82,8 +82,9 @@ enum Shell {
     static func quote(_ s: String) -> String { "'" + s.replacingOccurrences(of: "'", with: "'\\''") + "'" }
 
     /// Disk usage in bytes, following `du -sk`. Slow on big trees; call off the main thread.
-    static func du(_ path: String, timeout: TimeInterval = 120) -> Int64? {
-        let r = run("/usr/bin/du", ["-sk", path], timeout: timeout)
+    /// `excluding` skips folders by name anywhere below `path` (du -I), e.g. places macOS would ask permission for.
+    static func du(_ path: String, excluding: [String] = [], timeout: TimeInterval = 120) -> Int64? {
+        let r = run("/usr/bin/du", ["-sk"] + excluding.flatMap { ["-I", $0] } + [path], timeout: timeout)
         guard let kb = Int64(r.out.split(separator: "\t").first?.trimmingCharacters(in: .whitespaces) ?? "") else { return nil }
         return kb * 1024
     }

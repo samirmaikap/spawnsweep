@@ -2,7 +2,7 @@ import SwiftUI
 import AppKit
 
 enum Page: String, CaseIterable, Identifiable {
-    case sessions, ports, resources, mac, junk, largeFiles, storage, recycle, autopilot, connections, safety, activity, settings, welcome, pro
+    case sessions, ports, resources, mac, junk, largeFiles, spaceLens, storage, recycle, autopilot, connections, safety, activity, settings, welcome, pro
     var id: String { rawValue }
 
     var title: String {
@@ -13,6 +13,7 @@ enum Page: String, CaseIterable, Identifiable {
         case .mac: return "This Mac"
         case .junk: return "Junk"
         case .largeFiles: return "Large & old files"
+        case .spaceLens: return "Space Lens"
         case .storage: return "Storage"
         case .recycle: return "Recycle bin"
         case .autopilot: return "Autopilot"
@@ -25,10 +26,10 @@ enum Page: String, CaseIterable, Identifiable {
         }
     }
 
-    /// Junk and Large & old files open from This Mac, so the sidebar keeps This Mac selected there.
+    /// Junk, Large & old files and Space Lens open from This Mac, so the sidebar keeps This Mac selected there.
     var sidebarPage: Page {
         switch self {
-        case .junk, .largeFiles: return .mac
+        case .junk, .largeFiles, .spaceLens: return .mac
         default: return self
         }
     }
@@ -41,6 +42,7 @@ enum Page: String, CaseIterable, Identifiable {
         case .mac: return "laptopcomputer"
         case .junk: return "bubbles.and.sparkles"
         case .largeFiles: return "doc.text.magnifyingglass"
+        case .spaceLens: return "circle.hexagongrid"
         case .storage: return "internaldrive"
         case .recycle: return "archivebox"
         case .autopilot: return "sparkles"
@@ -124,6 +126,7 @@ final class AppModel {
     let system = SystemMonitor()
     let junk = JunkStore()
     let largeFiles = LargeFileStore()
+    let lens = LensStore()
     /// SpawnSweep Pro (Dodo Payments license, kept in the Keychain).
     let license = LicenseStore()
     var autopilotBusy = false
@@ -284,8 +287,8 @@ final class AppModel {
     // MARK: - Navigation
 
     func go(_ p: Page) {
-        // The free edition has no Junk, Large & old files or Pro page: those links land on This Mac.
-        if !Edition.hasPro, [.junk, .largeFiles, .pro].contains(p) { return go(.mac) }
+        // The free edition has no Junk, Large & old files, Space Lens or Pro page: those links land on This Mac.
+        if !Edition.hasPro, [.junk, .largeFiles, .spaceLens, .pro].contains(p) { return go(.mac) }
         page = p
         sessionDetail = nil
         repoDetail = nil
@@ -588,6 +591,43 @@ final class AppModel {
         if list.isEmpty {
             spec.title = "Nothing to slim"; spec.subtitle = "These worktrees have no dependencies or build output to remove."
             spec.action = nil; spec.confirmTitle = "OK"
+        }
+        present(spec)
+    }
+
+    // MARK: - Space Lens
+
+    /// Idle agent worktrees inside `node` that Slim can shrink. Slim's own checks run again when it acts.
+    func lensSlimmable(_ node: LensNode) -> [Worktree] {
+        guard node.isDir, node.kind != .appData else { return [] }
+        return disk.worktrees.filter { ($0.path == node.path || $0.path.hasPrefix(node.path + "/")) && $0.status != .inUse && ($0.slimBytes ?? 0) > 0 }
+    }
+
+    /// What Space Lens calls safe to clear: a rebuildable folder itself, or what Slim would free inside a folder.
+    func lensSafeBytes(_ node: LensNode) -> Int64 {
+        if node.kind == .rebuildable { return node.bytes }
+        return lensSlimmable(node).reduce(0) { $0 + ($1.slimBytes ?? 0) }
+    }
+
+    func reviewLensTrash(_ n: LensNode) {
+        var spec = DialogSpec(icon: "trash", title: "Move \(n.name) to the Trash?",
+                              subtitle: "About \(Fmt.bytes(n.bytes)) comes back once you empty the Trash.",
+                              items: [DialogItem(id: n.path, label: n.name, detail: Fmt.bytes(n.bytes), required: true)],
+                              notes: [n.kind == .rebuildable ? "Tools make it again when you need it, for example with npm install."
+                                      : "It stays in the Trash until you empty it, so you can still put it back."],
+                              confirmTitle: "Move to Trash")
+        spec.activityTitle = "Moved \(n.name) to the Trash"
+        spec.runningNote = "Checking it again, then moving it."
+        if let why = Actions.trashRefusal(n.path) {
+            spec.warning = why; spec.action = nil; spec.confirmTitle = "OK"
+        } else {
+            let lens = self.lens
+            spec.action = { _ in
+                let o = Actions.trash([(n.path, n.bytes)])
+                Task { @MainActor in if !FileManager.default.fileExists(atPath: n.path) { lens.drop(n.path) } }
+                return o
+            }
+            spec.lockForPro(self)
         }
         present(spec)
     }

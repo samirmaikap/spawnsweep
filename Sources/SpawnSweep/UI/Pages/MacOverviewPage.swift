@@ -195,6 +195,7 @@ struct MacOverviewPage: View {
                     card(.largeFiles, title: "Large & old files", value: largeMeasuring ? "Measuring…" : Fmt.bytes(model.largeFiles.totalBytes),
                          caption: largeMeasuring ? "Big files you haven't opened in a while."
                             : "\(files.count) file\(files.count == 1 ? "" : "s") · \(Fmt.bytes(model.largeFiles.staleBytes)) not opened in 6 months", tone: .sand)
+                    card(.spaceLens, title: "Space Lens", value: "Explore", caption: "See what fills your home folder, folder by folder.", tone: .sky)
                 }
                 card(.storage, title: "Developer leftovers", value: devMeasuring ? "Measuring…" : Fmt.bytes(devLeftovers),
                      caption: "Dependencies and build output your projects can rebuild.", tone: .sage)
