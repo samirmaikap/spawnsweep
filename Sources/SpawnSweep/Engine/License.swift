@@ -68,6 +68,9 @@ enum License {
         return v.valid ? .valid : .invalid
     }
 
+    /// A license key has no spaces or line breaks; drop the ones that come along when it's copied from an email.
+    static func cleanKey(_ s: String) -> String { s.filter { !$0.isWhitespace } }
+
     /// Plain words for an activation that Dodo refused.
     static func activationError(status: Int?) -> String {
         switch status {
@@ -172,7 +175,7 @@ final class LicenseStore {
     }
 
     func activate(_ raw: String) {
-        let key = raw.trimmingCharacters(in: .whitespacesAndNewlines)
+        let key = License.cleanKey(raw)
         guard !key.isEmpty, !busy else { return }
         busy = true; message = nil
         Task {

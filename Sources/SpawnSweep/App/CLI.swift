@@ -224,6 +224,9 @@ extension CLI {
             """#.utf8))
         assert(act.id == "lki_9" && act.customer?.email == "sam@example.com")
         assert(License.activationError(status: 422).contains("maximum"))
+        // A key copied from an email or web page often ends in line breaks; a one-line field would show only the empty last line.
+        assert(License.cleanKey("ABCD-1234-EF\n\n") == "ABCD-1234-EF", "line breaks kept in a pasted key")
+        assert(License.cleanKey(" ab cd\t\r\n") == "abcd")
 
         Edition.pro?.selfTest()
         DiskScanner.selfTestWorktrees()

@@ -37,7 +37,8 @@ struct LicensePanel: View {
                 }
             } }
             HStack(spacing: 10) {
-                TextField("License key from your Dodo Payments email", text: $key)
+                // Cleaned as it comes in: a pasted "KEY⏎⏎" would otherwise show only its empty last line.
+                TextField("License key from your Dodo Payments email", text: Binding(get: { key }, set: { key = License.cleanKey($0) }))
                     .textFieldStyle(.plain).font(.mono(13))
                     .padding(.horizontal, 12).padding(.vertical, 9)
                     .clayInset(radius: 12)
@@ -50,7 +51,7 @@ struct LicensePanel: View {
                     }
                 }
                 .buttonStyle(.primary)
-                .disabled(lic.busy || key.trimmingCharacters(in: .whitespaces).isEmpty)
+                .disabled(lic.busy || key.isEmpty)
                 Button { if let url = License.checkoutURL { NSWorkspace.shared.open(url) } } label: {
                     Label("Get a key", systemImage: "cart")
                 }
