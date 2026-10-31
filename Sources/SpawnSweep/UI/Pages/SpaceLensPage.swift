@@ -15,67 +15,110 @@ struct SpaceLensPage: View {
                     Button { lens.start() } label: { Label("Start over", systemImage: "arrow.counterclockwise") }.buttonStyle(.quiet)
                 }
             }
-            if !LensAccess.full { accessBanner }
             switch lens.phase {
             case .idle: startCard
             case .scanning: scanningCard
             case .ready: results
             }
         }
+        .onAppear { lens.refreshAccess() }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in lens.refreshAccess() }
     }
 
     // MARK: - Start and scanning
 
+    /// Laid out like the Sessions hero: words and the app's pill button on the left, the moon on the right.
     private var startCard: some View {
-        VStack(spacing: 16) {
-            OrbitMoons(moving: false).padding(.top, 10)
-            Text("Build your storage map").font(.system(size: 22, weight: .semibold)).foregroundStyle(Theme.text)
-            Text(lens.stoppedEarly ? "Stopped. Start again whenever you like."
-                 : "Space Lens measures your whole disk once, then you can look through it instantly. It takes a few minutes.")
-                .font(.system(size: 13)).foregroundStyle(Theme.secondary).multilineTextAlignment(.center).frame(maxWidth: 440)
-            RoundButton(title: "Scan") { lens.start() }.padding(.top, 8)
+        HeroCard {
+            HStack(spacing: 32) {
+                VStack(alignment: .leading, spacing: 0) {
+                    Text("SPACE LENS").font(.system(size: 11, weight: .semibold)).tracking(1.6).foregroundStyle(Theme.activeText)
+                    Text("Map your whole disk.").heading(26).padding(.top, 8)
+                    Text(lens.stoppedEarly ? "Stopped. Scan again whenever you like."
+                         : "Space Lens measures everything on Macintosh HD once, then you can look through it instantly. It takes a few minutes.")
+                        .font(.system(size: 14)).foregroundStyle(Theme.secondary).fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, 14)
+                    if !lens.hasAccess {
+                        Label("Needs Full Disk Access. Scan opens the switch in System Settings.", systemImage: "lock.fill")
+                            .font(.system(size: 12, weight: .medium)).foregroundStyle(Theme.amberText)
+                            .padding(.horizontal, 11).padding(.vertical, 7)
+                            .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Theme.amberFill))
+                            .padding(.top, 16)
+                    }
+                    Button { lens.start() } label: {
+                        HStack(spacing: 8) { Text("Scan disk"); Image(systemName: "arrow.up.right").font(.system(size: 12, weight: .semibold)) }
+                    }
+                    .buttonStyle(.primaryLarge)
+                    .padding(.top, 24)
+                }
+                Spacer(minLength: 0)
+                Moon(size: 130).frame(width: 190, height: 150)
+            }
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 34)
-        .clay(radius: 30, fill: Theme.heroGradient, glass: false)
     }
 
     private var scanningCard: some View {
-        let p = lens.progress
-        return VStack(spacing: 16) {
-            OrbitMoons(moving: true)
-            Text("Building your storage map…").font(.system(size: 22, weight: .semibold)).foregroundStyle(Theme.text)
-            Text(p.path.isEmpty ? "Starting…" : p.path)
-                .font(.system(size: 12, design: .monospaced)).foregroundStyle(Theme.secondary)
-                .lineLimit(1).truncationMode(.middle).frame(maxWidth: 560)
-            HStack(spacing: 18) {
-                StopRing(fraction: p.fraction) { lens.stop() }
-                VStack(alignment: .leading, spacing: 2) {
-                    Text(Fmt.bytes(p.bytes)).font(.system(size: 20, weight: .semibold)).monospacedDigit().foregroundStyle(Theme.text)
-                    Text("measured so far").font(.system(size: 12)).foregroundStyle(Theme.secondary)
+        VStack(spacing: 16) {
+            HeroCard {
+                HStack(spacing: 24) {
+                    VStack(alignment: .leading, spacing: 0) {
+                        Text("Measuring your disk…").heading(26)
+                        Text(lens.progress.path.isEmpty ? "Starting…" : lens.progress.path)
+                            .font(.system(size: 12, design: .monospaced)).foregroundStyle(Theme.secondary)
+                            .lineLimit(1).truncationMode(.middle).padding(.top, 14)
+                        progressBar.padding(.top, 12)
+                        Button { lens.stop() } label: { Label("Stop", systemImage: "stop.fill") }
+                            .buttonStyle(.quiet).padding(.top, 20)
+                            .accessibilityLabel("Stop measuring")
+                    }
+                    GatherMoons().frame(width: 290, height: 180)
                 }
             }
-            .padding(.top, 6)
+            TimelineView(.periodic(from: .now, by: 1)) { ctx in
+                scanTiles(elapsed: ctx.date.timeIntervalSince(lens.startedAt))
+            }
         }
-        .frame(maxWidth: .infinity)
-        .padding(.vertical, 30)
-        .clay(radius: 30, fill: Theme.heroGradient, glass: false)
     }
 
-    private var accessBanner: some View {
-        HStack(spacing: 14) {
-            IconTile(symbol: "lock.shield", size: 32, tone: .sky)
-            VStack(alignment: .leading, spacing: 2) {
-                Text("Desktop, Documents, Downloads and other apps' data are skipped.")
-                    .font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.text)
-                Text("macOS would ask about each one. Give SpawnSweep Full Disk Access once to measure everything, then quit and reopen it.")
-                    .font(.system(size: 12)).foregroundStyle(Theme.secondary).fixedSize(horizontal: false, vertical: true)
+    private var progressBar: some View {
+        GeometryReader { g in
+            ZStack(alignment: .leading) {
+                Capsule().fill(Theme.barTrack)
+                Capsule().fill(Theme.accentLight).frame(width: max(8, g.size.width * lens.done))
             }
-            Spacer(minLength: 8)
-            Button("Open Settings") { NSWorkspace.shared.open(LensAccess.settings) }.buttonStyle(.quiet)
         }
-        .padding(.horizontal, 16).padding(.vertical, 12)
-        .clayInset(radius: 18)
+        .frame(height: 7)
+        .animation(.easeOut(duration: 0.4), value: lens.done)
+    }
+
+    /// The Sessions page's stat tiles: what's measured, how far through the disk, and time.
+    private func scanTiles(elapsed: TimeInterval) -> some View {
+        let percent: String = "\(Int(lens.done * 100))%"
+        let of: String = lens.diskUsed > 0 ? "Of \(Fmt.bytes(lens.diskUsed)) in use" : "Of your disk"
+        return HStack(spacing: 16) {
+            SessionStatTile(symbol: "internaldrive", tone: .sage) {
+                StatBlock(value: Fmt.bytes(lens.progress.bytes), label: "Measured so far")
+            }
+            SessionStatTile(symbol: "folder", tone: .sky) { StatBlock(value: percent, label: of) }
+            SessionStatTile(symbol: "clock", tone: .sand) {
+                StatBlock(value: Self.clock(elapsed), label: Self.timeLeft(elapsed: elapsed, done: lens.done))
+            }
+        }
+    }
+
+    /// "48s", "2m 05s".
+    static func clock(_ t: TimeInterval) -> String {
+        let s = max(0, Int(t))
+        return s < 60 ? "\(s)s" : String(format: "%dm %02ds", s / 60, s % 60)
+    }
+
+    /// A rough finish time from the pace so far, once there's enough of it to go on.
+    static func timeLeft(elapsed: TimeInterval, done: Double) -> String {
+        guard done >= 0.05, elapsed >= 5 else { return "Working out time left" }
+        let left: Double = elapsed * (1 - done) / done
+        if left < 60 { return "Less than a minute left" }
+        let minutes = Int((left / 60).rounded())
+        return "About \(minutes) minute\(minutes == 1 ? "" : "s") left"
     }
 
     // MARK: - Results
@@ -227,7 +270,8 @@ struct SpaceLensPage: View {
             Spacer()
             Text(n == 0 ? "Tick what you don't need" : "\(n) item\(n == 1 ? "" : "s") · \(Fmt.bytes(lens.checkedBytes)) to the Trash")
                 .font(.system(size: 13)).monospacedDigit().foregroundStyle(Theme.secondary)
-            RoundButton(title: "Remove", enabled: n > 0) { model.reviewLensRemove(Array(lens.checked.values)) }
+            Button { model.reviewLensRemove(Array(lens.checked.values)) } label: { Label("Move to Trash", systemImage: "trash") }
+                .buttonStyle(.primary).disabled(n == 0)
         }
         .padding(.horizontal, 24).padding(.vertical, 14)
         .background(Theme.tint.opacity(0.35))
@@ -339,73 +383,52 @@ struct LensMoon: View {
     }
 }
 
-/// Small moons orbiting the app's moon while Space Lens measures; still before a scan and with Reduce Motion.
-/// The only looping motion in the app, and only while it's working.
-struct OrbitMoons: View {
-    var moving: Bool
+/// While Space Lens measures, small moons in the colors of what it finds drift out from behind the app's moon
+/// and settle into a cluster, a hint of the map to come. Still with Reduce Motion. The app's only looping motion,
+/// and only while it's working.
+struct GatherMoons: View {
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
-    private static let moons: [(tone: LensKind, size: CGFloat, speed: Double, phase: Double)] =
-        [(.yourFiles, 26, 0.55, 0.6), (.appData, 18, 0.8, 2.8), (.apps, 14, 1.1, 4.6)]
+    private static let moons: [(kind: LensKind, size: CGFloat, x: CGFloat, y: CGFloat)] = [
+        (.yourFiles, 30, 106, -40), (.appData, 22, 124, 6), (.apps, 26, 100, 48),
+        (.rebuildable, 18, -92, 44), (.system, 20, -86, -50), (.project, 14, 58, -72)
+    ]
+    static let period = 6.0
+
+    /// One moon's trip, `f` from 0 to 1: out from behind the big moon (first 55%), a gentle bob, then a fade.
+    static func stage(_ f: Double) -> (travel: Double, opacity: Double, scale: Double, bob: Double) {
+        let x: Double = min(1, f / 0.55)
+        let travel: Double = x * x * (3 - 2 * x)
+        let opacity: Double = f < 0.15 ? f / 0.15 : f > 0.85 ? (1 - f) / 0.15 : 1
+        let shrink: Double = f > 0.85 ? 0.1 * (f - 0.85) / 0.15 : 0
+        let bob: Double = f > 0.55 ? -4 * sin(min(1, (f - 0.55) / 0.3) * .pi) : 0
+        return (travel, opacity, 0.2 + 0.8 * travel - shrink, bob)
+    }
 
     var body: some View {
-        TimelineView(.animation(paused: !moving || reduceMotion)) { ctx in
+        TimelineView(.animation(paused: reduceMotion)) { ctx in
             let t = ctx.date.timeIntervalSinceReferenceDate
+            let breathe: CGFloat = reduceMotion ? 1 : 1 + 0.015 * CGFloat(sin(t * 2 * .pi / 3.2))
             ZStack {
-                Ellipse().stroke(Color.white.opacity(0.10), lineWidth: 1).frame(width: 270, height: 112)
                 ForEach(0..<Self.moons.count, id: \.self) { i in
-                    let m = Self.moons[i]
-                    let a = (moving && !reduceMotion ? t * m.speed : 0) + m.phase
-                    Circle()
-                        .fill(RadialGradient(colors: LensMoon.palette(m.tone).map { Color(hex: $0) }, center: UnitPoint(x: 0.3, y: 0.25), startRadius: 0, endRadius: m.size))
-                        .frame(width: m.size, height: m.size)
-                        .shadow(color: .black.opacity(0.3), radius: 4, y: 3)
-                        .offset(x: 135 * CGFloat(cos(a)), y: 56 * CGFloat(sin(a)))
-                        .zIndex(sin(a) < 0 ? -1 : 1)   // behind the moon on the far side of the orbit
+                    moon(i, t: t)
                 }
-                Moon(size: 140, rings: false).zIndex(0)
+                Moon(size: 110, rings: false).scaleEffect(breathe)
             }
-            .frame(width: 300, height: 220)
         }
         .accessibilityHidden(true)
     }
-}
 
-/// The round Stop button: its ring fills as the scan gets through the disk.
-struct StopRing: View {
-    let fraction: Double
-    let action: () -> Void
-    var body: some View {
-        Button(action: action) {
-            ZStack {
-                Circle().stroke(Theme.barTrack, lineWidth: 4)
-                Circle().trim(from: 0, to: max(0.02, fraction)).stroke(Theme.accentLight, style: StrokeStyle(lineWidth: 4, lineCap: .round))
-                    .rotationEffect(.degrees(-90))
-                    .animation(.easeOut(duration: 0.3), value: fraction)
-                Text("Stop").font(.system(size: 15, weight: .semibold)).foregroundStyle(Theme.text)
-                    .frame(width: 70, height: 70).background(Circle().fill(Theme.tintStrong))
-            }
-            .frame(width: 82, height: 82)
-        }
-        .buttonStyle(.plain)
-        .accessibilityLabel("Stop measuring")
-    }
-}
-
-/// The big round action button (Scan, Remove), a clay pill turned into a disc.
-struct RoundButton: View {
-    let title: String
-    var enabled = true
-    let action: () -> Void
-    var body: some View {
-        Button(action: action) {
-            Text(title).font(.system(size: 15, weight: .semibold)).foregroundStyle(.white)
-                .frame(width: 86, height: 86)
-                .background(Circle().fill(LinearGradient(colors: [Color(hex: 0x6A9A79), Color(hex: 0x4A7357)], startPoint: .top, endPoint: .bottom)
-                    .shadow(.inner(color: .white.opacity(0.35), radius: 3, x: 1, y: 2))))
-                .shadow(color: .black.opacity(enabled ? 0.35 : 0.1), radius: 10, y: 6)
-                .opacity(enabled ? 1 : 0.45)
-        }
-        .buttonStyle(.plain)
-        .disabled(!enabled)
+    private func moon(_ i: Int, t: Double) -> some View {
+        let m = Self.moons[i]
+        let f: Double = (t - Double(i)).truncatingRemainder(dividingBy: Self.period) / Self.period
+        let s = reduceMotion ? (travel: 1.0, opacity: 1.0, scale: 1.0, bob: 0.0) : Self.stage(f)
+        let colors: [Color] = LensMoon.palette(m.kind).map { Color(hex: $0) }
+        return Circle()
+            .fill(RadialGradient(colors: colors, center: UnitPoint(x: 0.3, y: 0.25), startRadius: 0, endRadius: m.size))
+            .frame(width: m.size, height: m.size)
+            .shadow(color: .black.opacity(0.3), radius: 4, x: 1, y: 3)
+            .scaleEffect(s.scale)
+            .opacity(s.opacity)
+            .offset(x: m.x * CGFloat(s.travel), y: m.y * CGFloat(s.travel) + CGFloat(s.bob))
     }
 }

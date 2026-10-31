@@ -207,6 +207,13 @@ extension CLI {
         assert(codexHost?.agent == .codex && codexHost?.pid == 21, "Codex app server not linked")
         assert(Scanner.hostApp(32, fake) == nil, "a terminal Codex CLI is a live agent, not a host app")
         assert(Scanner.hostApp(42, fake) == nil, "a server started in Terminal belongs to no app")
+        // Space Lens scanning: each gathering moon starts hidden, arrives, and fades; the time tile reads sensibly.
+        let s0 = GatherMoons.stage(0), sMid = GatherMoons.stage(0.55), sEnd = GatherMoons.stage(0.999)
+        assert(s0.opacity == 0 && s0.travel == 0 && sMid.travel == 1 && sMid.opacity == 1 && sEnd.opacity < 0.01)
+        assert(SpaceLensPage.clock(48) == "48s" && SpaceLensPage.clock(125) == "2m 05s")
+        assert(SpaceLensPage.timeLeft(elapsed: 3, done: 0.5) == "Working out time left")
+        assert(SpaceLensPage.timeLeft(elapsed: 60, done: 0.5) == "About 1 minute left")
+        assert(SpaceLensPage.timeLeft(elapsed: 120, done: 0.9) == "Less than a minute left")
         // Folder boundaries: a Docker stack in /app-db doesn't belong to a session in /app.
         assert(Scanner.inside("/s/app", "/s/app") && Scanner.inside("/s/app/api", "/s/app") && !Scanner.inside("/s/app-db", "/s/app"))
         // Space Lens never trashes anything outside home, app data, standard folders, settings, repos, or busy folders.

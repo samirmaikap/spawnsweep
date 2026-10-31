@@ -26,6 +26,13 @@ struct LensMap: Sendable {
     var cancelled = false
 
     /// Fills `children` and `repos` from `sizes`; call once after the scan.
+    /// Size and used space of the volume holding `root`, as Finder counts it.
+    static func diskUsage(_ root: String) -> (total: Int64, used: Int64)? {
+        guard let v = try? URL(fileURLWithPath: root).resourceValues(forKeys: [.volumeTotalCapacityKey, .volumeAvailableCapacityKey]),
+              let total = v.volumeTotalCapacity, let free = v.volumeAvailableCapacity else { return nil }
+        return (Int64(total), Int64(total - free))
+    }
+
     mutating func index() {
         children = [:]; repos = []
         for path in sizes.keys where path != "/" {
@@ -96,7 +103,9 @@ struct LensNode: Identifiable, Hashable, Sendable {
 /// Whether macOS lets SpawnSweep read everything. Checked without a prompt: the privacy database is only readable with
 /// Full Disk Access. Without it, Space Lens skips the places macOS would ask about instead of asking folder by folder.
 enum LensAccess {
-    static var full: Bool { FileManager.default.isReadableFile(atPath: Shell.home + "/Library/Application Support/com.apple.TCC/TCC.db") }
+    /// Readable only with Full Disk Access, so reading it asks nothing and tells us whether we have it.
+    static let probe = Shell.home + "/Library/Application Support/com.apple.TCC/TCC.db"
+    static var full: Bool { FileManager.default.isReadableFile(atPath: probe) }
     static let settings = URL(string: "x-apple.systempreferences:com.apple.preference.security?Privacy_AllFiles")!
 }
 

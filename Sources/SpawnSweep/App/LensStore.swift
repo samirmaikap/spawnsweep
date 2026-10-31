@@ -1,4 +1,5 @@
 import SwiftUI
+import AppKit
 
 /// Space Lens state. The whole disk is measured once into `map`; after that, browsing reads each folder from it.
 /// Contents and "can't tick" reasons are worked out off the main thread, so hovering and redrawing stay cheap.
@@ -20,6 +21,11 @@ final class LensStore {
     /// Why an item can't be ticked, by path. Items with no entry can be.
     var refusals: [String: String] = [:]
     var hovered: String?
+    /// Space Lens only scans with Full Disk Access. Rechecked whenever SpawnSweep comes back to the front.
+    var hasAccess = LensAccess.full
+    /// When this scan began, and how much of the disk is in use, for the time and percent tiles while it runs.
+    var startedAt = Date()
+    var diskUsed: Int64 = 0
 
     private var scan: LensScan?
     private var generation = 0
@@ -27,12 +33,28 @@ final class LensStore {
     var current: String { stack.last ?? "/" }
     var checkedBytes: Int64 { checked.values.reduce(0) { $0 + $1.bytes } }
 
+    func refreshAccess() { hasAccess = LensAccess.full }
+
+    /// How far the scan is, by bytes measured against the disk's used space. Capped below 1 because snapshots
+    /// and purgeable space are in use but never measured.
+    var done: Double { diskUsed > 0 ? min(0.99, Double(progress.bytes) / Double(diskUsed)) : progress.fraction }
+
+    /// Opens Full Disk Access in System Settings. Trying the protected file first is what makes macOS list
+    /// SpawnSweep there with its switch off, ready to turn on.
+    func requestAccess() {
+        _ = FileHandle(forReadingAtPath: LensAccess.probe)
+        NSWorkspace.shared.open(LensAccess.settings)
+    }
+
     func start() {
+        refreshAccess()
+        guard hasAccess else { requestAccess(); return }
         guard Edition.hasPro, phase != .scanning else { return }
         generation += 1
         let gen = generation, s = LensScan()
         scan = s
         phase = .scanning; progress = LensProgress(); stoppedEarly = false
+        startedAt = Date(); diskUsed = LensMap.diskUsage("/")?.used ?? 0
         map = nil; levels = [:]; layouts = [:]; loading = []; checked = [:]; refusals = [:]; stack = ["/"]; forward = []; hovered = nil
         Task.detached {
             let m = Edition.pro?.lensMap(scan: s) { p in
