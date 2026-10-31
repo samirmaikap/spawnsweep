@@ -100,6 +100,7 @@ enum Scanner {
 
         // 3. Which agent made each resource?
         var owner: [String: (folder: String, agent: Agent, strength: LinkStrength)] = [:]
+        var hosts: [String: (agent: Agent, pid: Int32)] = [:]
         for r in resources {
             guard let root = r.rootPid, let start = r.processes.first?.start else { continue }
             if let a = agentAncestor(root), let info = agentFolder[a] {
@@ -107,6 +108,11 @@ enum Scanner {
                 marks[String(root)] = AgentMark(folder: info.folder, agent: info.agent, start: start)
             } else if let m = marks[String(root)] {
                 owner[r.id] = (m.folder, m.agent, .strong)
+            } else if let cwd = r.cwd, let host = hostApp(root, table), case let folder = sessionRoot(cwd), folder != home {
+                // Started by the Claude or Codex app itself: linked weakly, like a worktree, and never remembered in
+                // `marks`, so it can't turn strong after the app quits.
+                owner[r.id] = (folder, host.agent, .weak)
+                hosts[folder] = host
             } else if let cwd = r.cwd, let (folder, agent) = worktreeFolder(cwd) {
                 // Only the folder ties it to an agent (one we may not see running, like the Codex app), so link it
                 // weakly: it's shown with the session but never stopped by a sweep, a rule or the end-of-session hook.
@@ -139,6 +145,11 @@ enum Scanner {
         var folders: [String: (agent: Agent, pids: [Int32])] = [:]
         for (pid, info) in agentFolder { folders[info.folder, default: (info.agent, [])].pids.append(pid) }
         for (_, o) in owner where folders[o.folder] == nil { folders[o.folder] = (o.agent, []) }
+        // While the app runs, its session isn't "ended": we can't see when that chat closes.
+        for (folder, host) in hosts where folders[folder]?.pids.isEmpty != false { folders[folder] = (host.agent, [host.pid]) }
+        // Only a live agent or a remembered agent child proves a folder's Docker stack is the session's. Next to an
+        // app-started server or a bare worktree, anyone may have started it, so it's linked weakly and sweeps skip it.
+        let proven = Set(agentFolder.values.map(\.folder)).union(owner.values.filter { $0.strength == .strong }.map(\.folder))
 
         var sessionResources: [String: [Resource]] = [:]
         var unattached: [Resource] = []
@@ -152,7 +163,7 @@ enum Scanner {
             // Stacks and devices: link by folder or project name, but weakly, so sweeps leave them unticked.
             if r.kind == .stack, let folder = folders.keys.first(where: { f in
                 (r.cwd.map { inside($0, f) } ?? false) || projectName(f) == r.stackProject }) {
-                r.link = (r.cwd.map { inside($0, folder) } ?? false) ? .strong : .weak
+                r.link = proven.contains(folder) && (r.cwd.map { inside($0, folder) } ?? false) ? .strong : .weak
                 sessionResources[folder, default: []].append(r)
                 continue
             }
@@ -170,12 +181,14 @@ enum Scanner {
         for (folder, info) in folders {
             let rs = (sessionResources[folder] ?? []).sorted { $0.kind.rawValue < $1.kind.rawValue }
             let alive = info.pids.filter { table[$0] != nil }
+            // A host app's own CPU says nothing about this folder, so only real agents count for "busy" and start time.
+            let agents = alive.filter { agentFolder[$0] != nil }
             let last = lastActivity(folder)
             let state: SessionState
             if alive.isEmpty {
                 state = .ended(since: last)
             } else {
-                let busy = alive.contains { pid in
+                let busy = agents.contains { pid in
                     (table[pid]?.cpu ?? 0) >= 1.0 ||
                     table.descendants(of: pid).contains { d in (table[d]?.cpu ?? 0) >= 2.0 && !rs.contains { $0.processes.contains { $0.pid == d } } }
                 }
@@ -183,7 +196,7 @@ enum Scanner {
                 state = (busy || recent) ? .active : .idle(since: last ?? Date())
             }
             if rs.isEmpty { continue }   // a session only matters here while it has something running
-            let starts = alive.compactMap { table[$0]?.start }
+            let starts = agents.compactMap { table[$0]?.start }
             sessions.append(Session(folder: folder, project: projectName(folder), branch: branch(folder),
                                     agent: info.agent, state: state, resources: rs, agentPids: alive,
                                     startedAt: starts.min().map { Date(timeIntervalSince1970: $0) },
@@ -226,6 +239,18 @@ enum Scanner {
         case "aider": return .aider
         default: return nil
         }
+    }
+
+    /// Desktop apps that start dev servers themselves, with no agent process in between: the Claude app's preview,
+    /// and the Codex app's one shared app-server, which has no folder, so `agent(of:)` skips it. The app says who
+    /// started the server; the server's own folder says which session it belongs to.
+    static func hostApp(_ pid: Int32, _ table: ProcessTable) -> (agent: Agent, pid: Int32)? {
+        for a in table.ancestors(of: pid) {
+            guard let p = table[a] else { continue }
+            if p.exe.hasPrefix("/Applications/Claude.app/Contents/MacOS/") { return (.claudeApp, a) }
+            if p.name == "codex" && p.command.contains(" app-server") { return (.codex, a) }
+        }
+        return nil
     }
 
     /// The process we treat as "the server": climb up through runtimes and package managers,

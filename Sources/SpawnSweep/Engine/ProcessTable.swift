@@ -38,6 +38,11 @@ final class ProcessTable {
         }
     }
 
+    /// A made-up table, for self-tests.
+    init(_ list: [Proc]) {
+        for p in list { procs[p.pid] = p; children[p.ppid, default: []].append(p.pid) }
+    }
+
     subscript(pid: Int32) -> Proc? { procs[pid] }
 
     private var cwdCache: [Int32: String] = [:]

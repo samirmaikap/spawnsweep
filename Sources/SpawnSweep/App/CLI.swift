@@ -189,6 +189,24 @@ extension CLI {
         assert(Scanner.agent(of: proc(Shell.home + "/.local/share/claude/versions/2.1.173", "claude --resume"), table: table) == .claudeCode,
                "native Claude Code wasn't recognised")
         assert(Scanner.agent(of: proc("/usr/bin/python3", "/usr/bin/python3 app.py"), table: table) == nil)
+        // Servers the Claude app's preview or the Codex app start have no agent process above them; the app itself is the link.
+        func p(_ pid: Int32, _ ppid: Int32, _ exe: String, _ cmd: String = "") -> Proc {
+            Proc(pid: pid, ppid: ppid, rssBytes: 0, cpu: 0, elapsed: 0, command: cmd.isEmpty ? exe : cmd, exe: exe, start: 0)
+        }
+        let codex = "/Applications/ChatGPT.app/Contents/Resources/codex-cli/CodexCLI.app/Contents/MacOS/codex"
+        let fake = ProcessTable([
+            p(10, 1, "/Applications/Claude.app/Contents/MacOS/Claude"),
+            p(11, 10, "/Applications/Claude.app/Contents/Helpers/disclaimer"), p(12, 11, "/bin/bash"), p(13, 12, "/usr/local/bin/node"),
+            p(20, 1, "/Applications/ChatGPT.app/Contents/MacOS/ChatGPT"), p(21, 20, codex, codex + " -c x=1 app-server"),
+            p(22, 21, "/usr/local/bin/npm"), p(23, 22, "/usr/local/bin/node"),
+            p(30, 1, "/bin/zsh"), p(31, 30, "/usr/local/bin/codex"), p(32, 31, "/usr/local/bin/node"),
+            p(40, 1, "/System/Applications/Utilities/Terminal.app/Contents/MacOS/Terminal"), p(41, 40, "/bin/zsh"), p(42, 41, "/usr/local/bin/node")
+        ])
+        let claudeHost = Scanner.hostApp(13, fake), codexHost = Scanner.hostApp(23, fake)
+        assert(claudeHost?.agent == .claudeApp && claudeHost?.pid == 10, "Claude app preview server not linked")
+        assert(codexHost?.agent == .codex && codexHost?.pid == 21, "Codex app server not linked")
+        assert(Scanner.hostApp(32, fake) == nil, "a terminal Codex CLI is a live agent, not a host app")
+        assert(Scanner.hostApp(42, fake) == nil, "a server started in Terminal belongs to no app")
         // Folder boundaries: a Docker stack in /app-db doesn't belong to a session in /app.
         assert(Scanner.inside("/s/app", "/s/app") && Scanner.inside("/s/app/api", "/s/app") && !Scanner.inside("/s/app-db", "/s/app"))
         // Space Lens never trashes anything outside home, app data, standard folders, settings, repos, or busy folders.
