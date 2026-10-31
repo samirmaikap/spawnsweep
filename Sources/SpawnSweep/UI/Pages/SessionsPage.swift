@@ -210,7 +210,7 @@ private struct SessionCard: View {
         let amber = raised && session.state.isEnded
         HStack(spacing: 18) {
             IconTile(symbol: session.agent.symbol, size: 52,
-                     tint: amber ? Theme.amberFill : Theme.tint, fg: amber ? Theme.amberText : Theme.accent)
+                     tint: amber ? Theme.amberFill : Theme.tint, fg: amber ? Theme.amberText : Theme.accentText)
             VStack(alignment: .leading, spacing: 6) {
                 HStack(spacing: 10) {
                     Text(session.project).font(.system(size: 15, weight: .medium)).foregroundStyle(Theme.text)

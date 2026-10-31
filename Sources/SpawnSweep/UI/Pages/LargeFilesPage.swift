@@ -196,7 +196,7 @@ struct LargeFileCard: View {
                 Spacer(minLength: 8)
                 Button(action: toggle) {
                     Image(systemName: selected ? "checkmark.circle.fill" : "circle")
-                        .font(.system(size: 20)).foregroundStyle(selected ? Theme.accent : Theme.secondary.opacity(0.6))
+                        .font(.system(size: 20)).foregroundStyle(selected ? Theme.accentText : Theme.secondary.opacity(0.6))
                         .frame(width: 28, height: 28).contentShape(Rectangle())
                 }
                 .buttonStyle(.plain)

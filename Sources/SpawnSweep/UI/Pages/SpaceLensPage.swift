@@ -206,7 +206,7 @@ struct SpaceLensPage: View {
             } else {
                 Button { lens.toggle(n) } label: {
                     Image(systemName: isChecked ? "checkmark.square.fill" : "square").font(.system(size: 17))
-                        .foregroundStyle(isChecked ? Theme.accentLight : Theme.secondary).frame(width: 22)
+                        .foregroundStyle(isChecked ? Theme.accentText : Theme.secondary).frame(width: 22)
                 }
                 .buttonStyle(.plain)
                 .accessibilityLabel(isChecked ? "Untick \(n.name)" : "Tick \(n.name) for removal")
@@ -392,7 +392,7 @@ struct LensMoon: View {
                 .offset(y: -r - 26)
             }
             if checked {
-                Image(systemName: "checkmark.circle.fill").font(.system(size: 20)).foregroundStyle(.white, Theme.accent)
+                Image(systemName: "checkmark.circle.fill").font(.system(size: 20)).foregroundStyle(Theme.onAccent, Theme.accent)
                     .offset(x: r * 0.62, y: -r * 0.62)
             }
         }

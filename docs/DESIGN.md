@@ -18,12 +18,13 @@ Reference mockups (2x PNGs): `~/Downloads/SpawnSweep UI Images/` — 01-sessions
 | Primary text | `#263A30` | `#E5EEE9` |
 | Secondary text | `#748278` | `#A5B7AB` |
 | Dividers / borders | `#DFE6DB` | `#46594A` |
-| Primary action | `#527D61` | `#527D61` |
-| Primary button text | `#FFFFFF` | `#FFFFFF` |
+| Primary action (emerald) | `#0E9F5B`, top of gradient `#2CC97A` | same |
+| Primary button text | `#0F2418` | `#0F2418` |
+| Primary as text or glyph (links, checkmarks, Active) | `#08703F` | `#5BE3A0` |
 
-Use the primary action color for the main next step, enabled switches, and selected controls. Keep large areas neutral.
+Use the primary action color for the main next step, enabled switches, and selected controls. Keep large areas neutral. Labels on emerald fills are dark ink, not white: white on this green is only 3.4:1. Whenever the primary appears as text or a small glyph, use the text shade (`Theme.accentText`), which reads at 4.8:1 or more on every surface.
 
-Status: Active = sage tint + dot + "Active". Idle = neutral sage badge with elapsed time. Ended with running resources = muted amber badge. Pinned = neutral badge with pin icon. Warning = soft amber surface with explanation. Destructive = system red at the final confirmation. Color always accompanies a label or icon.
+Status: Active = sage tint + dot + "Active" in the primary text shade. Idle = neutral sage badge with elapsed time. Ended with running resources = muted amber badge. Pinned = neutral badge with pin icon. Warning = soft amber surface with explanation. Destructive = system red at the final confirmation. Color always accompanies a label or icon.
 
 ## 2. Typography
 
@@ -47,7 +48,7 @@ Tighter tracking for large headings. Tabular numerals for values. Never shrink t
 
 ## 4. Glass and surfaces
 
-Glass in sidebar, menu bar popover, toolbar, modal backdrop only. Main reading surfaces stay stable. Fine highlight on raised edges; broad, soft, low-contrast shadows. Support Reduce Transparency and Increase Contrast.
+Clay with a light touch of glass. Large cards (panels, heroes) are frosted: about 60% fill over the material, a thin bright rim, and a soft sheen across the top. Small dense tiles stay opaque for steady reading but get the same rim and sheen. A faint emerald glow on the canvas gives the glass color to pick up. Broad, soft, low-contrast shadows. With Reduce Transparency every surface is opaque, with no rim or sheen. Support Increase Contrast.
 
 Radius: popover 20–22, cleanup summary 18–20, content panel 12–14, buttons/inputs 7–9, badges 5–6.
 

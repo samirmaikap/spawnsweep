@@ -83,7 +83,7 @@ struct DialogView: View {
                     HStack(spacing: 12) {
                         Image(systemName: item.checked ? "checkmark.square.fill" : "square")
                             .font(.system(size: 18))
-                            .foregroundStyle(item.checked ? Theme.accent : Theme.secondary)
+                            .foregroundStyle(item.checked ? Theme.accentText : Theme.secondary)
                         VStack(alignment: .leading, spacing: 3) {
                             Text(item.label).font(.system(size: 14)).foregroundStyle(Theme.text)
                             if let w = item.warning {
@@ -123,7 +123,7 @@ struct DialogView: View {
                 InfoBanner(text: "Anything that couldn't change was left exactly as it was.")
             }
             HStack {
-                Button("View activity") { model.dismissDialog(); model.go(.activity) }.buttonStyle(.link).foregroundStyle(Theme.accent)
+                Button("View activity") { model.dismissDialog(); model.go(.activity) }.buttonStyle(.link).foregroundStyle(Theme.accentText)
                 Spacer()
                 Button("Done") { model.dismissDialog() }.buttonStyle(.primaryLarge).keyboardShortcut(.defaultAction)
             }

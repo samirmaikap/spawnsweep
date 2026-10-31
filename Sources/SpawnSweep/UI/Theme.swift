@@ -28,14 +28,17 @@ enum Theme {
     static let text = Color(light: 0x263A30, dark: 0xE5EEE9)
     static let secondary = Color(light: 0x6E7D72, dark: 0xA5B7AB)
     static let border = Color(light: 0xDFE6DB, dark: 0x46594A)
-    static let accent = Color(hex: 0x527D61)
-    static let accentLight = Color(hex: 0x6A9A79)
-    static let onAccent = Color.white
+    /// Emerald primary. Bright fills take dark ink labels: white on this green is only 3.4:1.
+    static let accent = Color(hex: 0x0E9F5B)
+    static let accentLight = Color(hex: 0x2CC97A)
+    static let onAccent = Color(hex: 0x0F2418)
+    /// The primary as text or a glyph: links, checkmarks, icons on tints. Readable on every surface (4.8:1 or more).
+    static let accentText = Color(light: 0x08703F, dark: 0x5BE3A0)
 
     /// Soft sage fill for neutral badges, info banners and segmented tracks.
     static let tint = Color(light: 0xE7EEE3, dark: 0x33463A)
     static let tintStrong = Color(light: 0xDCE6D6, dark: 0x3A4F40)
-    static let activeText = Color(light: 0x3E6A4C, dark: 0xA8D3B4)
+    static let activeText = Color(light: 0x08703F, dark: 0x5BE3A0)
     static let amberFill = Color(light: 0xF6E8D9, dark: 0x4A3B26)
     static let amberText = Color(light: 0x8E5527, dark: 0xEBC395)
     static let warningFill = Color(light: 0xF5EADF, dark: 0x45382A)
@@ -45,6 +48,9 @@ enum Theme {
     static let clayShadow = Color(light: 0x6F8C74, dark: 0x000000, lightAlpha: 0.22, darkAlpha: 0.45)
     static let clayHighlight = Color(light: 0xFFFFFF, dark: 0xFFFFFF, lightAlpha: 0.9, darkAlpha: 0.10)
     static let clayShade = Color(light: 0x5C7A62, dark: 0x000000, lightAlpha: 0.14, darkAlpha: 0.45)
+    /// Glass on clay: a thin bright rim and a soft sheen across the top of translucent cards.
+    static let glassRim = Color(light: 0xFFFFFF, dark: 0xFFFFFF, lightAlpha: 0.55, darkAlpha: 0.16)
+    static let glassSheen = Color(light: 0xFFFFFF, dark: 0xFFFFFF, lightAlpha: 0.35, darkAlpha: 0.10)
 
     /// Soft color fields behind the content, so the glass has something to pick up.
     /// Storage bars: the empty track reads as a recessed slot, "everything else" as a solid neutral.
@@ -143,14 +149,20 @@ struct ClayBackground: View {
     var body: some View {
         let shape = RoundedRectangle(cornerRadius: radius, style: .continuous)
         ZStack {
-            if glass && !reduceTransparency { shape.fill(.ultraThinMaterial) }
+            let frosted = glass && !reduceTransparency
+            if frosted { shape.fill(.ultraThinMaterial) }
             if inset {
                 shape.fill(fill.shadow(.inner(color: Theme.clayShade, radius: 5, x: 2, y: 3))
                                .shadow(.inner(color: Theme.clayHighlight, radius: 4, x: -2, y: -2)))
             } else {
-                shape.fill(fill.opacity(glass && !reduceTransparency ? 0.82 : 1)
+                shape.fill(fill.opacity(frosted ? 0.62 : 1)
                                .shadow(.inner(color: Theme.clayHighlight, radius: 7, x: 3, y: 4))
                                .shadow(.inner(color: Theme.clayShade, radius: 10, x: -4, y: -6)))
+                // Every raised card gets the glass edge; small solid tiles (glass: false) stay opaque for steady reading.
+                if !reduceTransparency {
+                    shape.fill(LinearGradient(colors: [Theme.glassSheen, .clear], startPoint: .top, endPoint: UnitPoint(x: 0.5, y: 0.38)))
+                    shape.strokeBorder(Theme.glassRim, lineWidth: 1)
+                }
             }
         }
         // A gradient fill with inner shadows leaves a bright fringe on the curved edge pixels (seen on
@@ -178,6 +190,9 @@ struct Canvas: View {
             RadialGradient(colors: [Theme.blobMint, Theme.blobMint.opacity(0)], center: .topTrailing, startRadius: 0, endRadius: 620)
             RadialGradient(colors: [Theme.blobSky, Theme.blobSky.opacity(0)], center: .bottomLeading, startRadius: 0, endRadius: 560)
             RadialGradient(colors: [Theme.blobSand.opacity(0.7), Theme.blobSand.opacity(0)], center: UnitPoint(x: 0.75, y: 0.95), startRadius: 0, endRadius: 420)
+            // A faint glow of the primary, so the glass cards have some color to pick up.
+            RadialGradient(colors: [Theme.accent.opacity(0.22), Theme.accent.opacity(0)], center: UnitPoint(x: 0.3, y: 0.18), startRadius: 0, endRadius: 310)
+            RadialGradient(colors: [Theme.accentLight.opacity(0.18), Theme.accentLight.opacity(0)], center: UnitPoint(x: 0.85, y: 0.62), startRadius: 0, endRadius: 260)
         }
         .ignoresSafeArea()
     }
@@ -245,7 +260,7 @@ struct Footer: View {
                 Text(model.scanning ? "Scanning…" : "Updated \(Fmt.ago(model.workspace.scannedAt))")
             }
             Button("Rescan") { model.refresh(withStats: true); model.refreshDisk() }
-                .buttonStyle(.link).foregroundStyle(Theme.accent)
+                .buttonStyle(.link).foregroundStyle(Theme.accentText)
             Spacer()
             Button("Welcome & setup") { model.go(.welcome) }.buttonStyle(.plain)
         }
@@ -325,7 +340,7 @@ struct IconTile: View {
     }
 
     /// Older call sites passed explicit colors; they map onto a tone with the same fill.
-    init(symbol: String, size: CGFloat = 44, tint: Color, fg: Color = Theme.accent) {
+    init(symbol: String, size: CGFloat = 44, tint: Color, fg: Color = Theme.accentText) {
         self.symbol = symbol; self.size = size; self.tone = ClayTone(fill: tint, glyph: fg)
     }
 
@@ -571,7 +586,7 @@ struct NavLink: View {
     var body: some View {
         Button(action: action) {
             HStack(spacing: 6) { Text(title); Image(systemName: "chevron.right").font(.system(size: 10, weight: .semibold)) }
-                .font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.accent)
+                .font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.accentText)
         }
         .buttonStyle(.plain)
     }

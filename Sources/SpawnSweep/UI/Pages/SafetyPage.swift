@@ -238,7 +238,7 @@ private struct ProtectList: View {
             Button(action: toggle) {
                 HStack(spacing: 12) {
                     Image(systemName: on ? "checkmark.square.fill" : "square")
-                        .font(.system(size: 18)).foregroundStyle(on ? Theme.accent : Theme.secondary)
+                        .font(.system(size: 18)).foregroundStyle(on ? Theme.accentText : Theme.secondary)
                     Text(label).font(.system(size: 14)).foregroundStyle(Theme.text)
                     Spacer()
                     Text(detail).font(.meta).foregroundStyle(Theme.secondary)
