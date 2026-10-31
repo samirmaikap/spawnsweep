@@ -81,9 +81,19 @@ if [ "$UNSIGNED" -eq 0 ]; then
   NOTES="Download SpawnSweep.zip, open it, and move SpawnSweep to Applications."
 else
   codesign --verify --strict "$APP"
-  NOTES="Install from Terminal: \`$INSTALL\`
+  NOTES="The easiest way is Terminal, which installs with no macOS warning: \`$INSTALL\`
 
-Or download SpawnSweep.zip, open it, and move SpawnSweep to Applications. This build isn't notarized by Apple yet, so the first time you open it macOS says it can't check it for malware. Open System Settings › Privacy & Security, scroll down, click **Open Anyway** next to SpawnSweep, then confirm."
+Or download SpawnSweep.zip, open it, and move SpawnSweep to Applications.
+
+### If macOS says \"SpawnSweep\" Not Opened
+
+This build isn't notarized by Apple yet, so the first time you open a browser download macOS says *Apple could not verify \"SpawnSweep\" is free of malware*. It only happens once.
+
+1. Click **Done**, not Move to Bin.
+2. Open **System Settings › Privacy & Security** and scroll to the bottom. Next to the message about SpawnSweep, click **Open Anyway**, then confirm with your password or Touch ID. If you don't see the button, open SpawnSweep again, then come back.
+3. SpawnSweep opens, and macOS won't ask again.
+
+Or clear the download flag in Terminal: \`xattr -dr com.apple.quarantine /Applications/SpawnSweep.app\`"
 fi
 
 # 5. Zip the app and draft the release. Drafts stay hidden until you publish them.

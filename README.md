@@ -33,13 +33,27 @@ Native SwiftUI, macOS 14+. Everything stays on your Mac. No account, no telemetr
 
 ## Install
 
-**Download** (macOS 14 or later, Apple silicon). Paste this into Terminal:
+**Download** (macOS 14 or later, Apple silicon). The easiest way is to paste this into Terminal:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/samirmaikap/spawnsweep/main/scripts/install.sh | bash
 ```
 
-It downloads the latest release into Applications and opens it. You can also download `SpawnSweep.zip` from [Releases](https://github.com/samirmaikap/spawnsweep/releases/latest) yourself. SpawnSweep isn't notarized by Apple yet, so the first time you open a copy downloaded in a browser, macOS says it can't check it for malware. Open System Settings › Privacy & Security and click **Open Anyway**. The download includes SpawnSweep Pro, which a license key unlocks.
+It downloads the latest release into Applications and opens it, with no macOS warning. You can also download `SpawnSweep.zip` from [Releases](https://github.com/samirmaikap/spawnsweep/releases/latest), open it, and move SpawnSweep to Applications. The download includes SpawnSweep Pro, which a license key unlocks.
+
+### If macOS says "SpawnSweep" Not Opened
+
+SpawnSweep isn't notarized by Apple yet. The first time you open a copy downloaded in a browser, macOS says *Apple could not verify "SpawnSweep" is free of malware*. It shows this for every app that isn't notarized, and it only happens once.
+
+1. Click **Done**, not Move to Bin.
+2. Open **System Settings › Privacy & Security** and scroll to the bottom. Next to the message about SpawnSweep, click **Open Anyway**, then confirm with your password or Touch ID. The button only stays for a while after the warning; if you don't see it, open SpawnSweep again, then come back.
+3. SpawnSweep opens, and macOS won't ask again.
+
+Or clear the download flag in Terminal and open it normally (change the path if the app isn't in Applications):
+
+```bash
+xattr -dr com.apple.quarantine /Applications/SpawnSweep.app
+```
 
 **Build from source** (Xcode 16 or the Swift 6 toolchain):
 
