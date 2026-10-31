@@ -96,7 +96,9 @@ final class LensStore {
         loading.insert(path)
         let gen = generation, s = scan ?? LensScan()
         Task.detached {
-            let nodes = Edition.pro?.lensLevel(path, map: map, scan: s) ?? []
+            let measured = Edition.pro?.lensLevel(path, map: map, scan: s) ?? []
+            let nodes = path.hasSuffix("/Library/Developer/CoreSimulator/Devices")
+                ? Self.named(measured, devices: Scanner.simulators(ProcessTable([]))) : measured
             let layout = LensLayout(folder: path, nodes: nodes)
             let reasons = Dictionary(nodes.compactMap { n in Self.refusal(n, map: map).map { (n.path, $0) } }, uniquingKeysWith: { a, _ in a })
             await MainActor.run {
@@ -108,12 +110,22 @@ final class LensStore {
         }
     }
 
+    /// Simulator folders are named by UUID; show the device instead ("iPhone 16 Pro · iOS 18.2").
+    nonisolated static func named(_ nodes: [LensNode], devices: [Device]) -> [LensNode] {
+        let byID = Dictionary(devices.map { ($0.udid, $0) }, uniquingKeysWith: { a, _ in a })
+        return nodes.map { n in
+            guard let d = byID[n.name] else { return n }
+            var m = n
+            m.name = d.runtime.isEmpty ? d.name : "\(d.name) · \(d.runtime)"
+            return m
+        }
+    }
+
     /// Why `n` can't be ticked, or nil. Remove checks all of this again, plus what's running, right before it acts.
     nonisolated static func refusal(_ n: LensNode, map: LensMap) -> String? {
         if n.kind == .unmeasured { return "macOS keeps this for snapshots and purgeable data, and frees it on its own when space runs low." }
         if n.locked { return "SpawnSweep needs Full Disk Access to look inside." }
         if let why = Actions.trashRefusal(n.path, busy: []) { return why }
-        if n.isDir && map.containsRepo(n.path) { return "It holds git repositories. Open it and remove only what's safe to clear." }
         return nil
     }
 

@@ -1,4 +1,5 @@
 import Foundation
+import AppKit
 import Darwin
 
 /// Everything that changes the Mac. Every function re-checks its safety conditions itself,
@@ -300,50 +301,99 @@ enum Actions {
     /// The home folder's own top-level folders. Their contents can go; the folders themselves stay.
     static let standardFolders: Set<String> = ["Desktop", "Documents", "Downloads", "Movies", "Music", "Pictures", "Public", "Applications", "Library"]
 
-    /// Why `path` can't go to the Trash from Space Lens, or nil if it can. Checked when you ask and again right before the move.
-    /// Links are resolved first, so a link inside your home folder that points elsewhere counts as elsewhere.
+    /// Why `path` can't go to the Trash from Space Lens, or nil if it can. Like a cleaner app, nearly everything can:
+    /// the Trash is the safety net and the preview warns about projects and app data (`trashWarning`). Locked: macOS
+    /// and other accounts, your home and its standard folders, keys and logins, a project's .git on its own, and
+    /// anything in use. Links are resolved first, so a link that points elsewhere counts as elsewhere.
     static func trashRefusal(_ path: String, home: String = Shell.home, busy: [String]? = nil) -> String? {
         let h = URL(fileURLWithPath: home).resolvingSymlinksInPath().path
         let p = URL(fileURLWithPath: path).resolvingSymlinksInPath().path
-        guard p.hasPrefix(h + "/") else { return "It's outside your home folder." }
-        let parts = p.dropFirst(h.count + 1).split(separator: "/").map(String.init)
-        if parts.first == "Library", parts.count > 1 { return "It's app data. Junk clears the parts that are safe to remove." }
-        if parts.count == 1, standardFolders.contains(parts[0]) { return "It's one of your Mac's standard folders." }
-        if let first = parts.first, first.hasPrefix(".") {
-            let rel = parts.joined(separator: "/")
-            guard toolCaches.contains(where: { rel == $0 || rel.hasPrefix($0 + "/") }) else { return "It holds settings or keys for your tools." }
-        }
-        if parts.contains(".git") { return "It's part of a git repository's history." }
-        let fm = FileManager.default
-        if fm.fileExists(atPath: p + "/.git") { return "It's a git repository. Open it and remove only what's safe to clear." }
-        // Inside a repository or worktree, only rebuildable folders can go; code, history and worktrees stay.
-        var dir = (p as NSString).deletingLastPathComponent
-        while dir.hasPrefix(h + "/") {
-            if fm.fileExists(atPath: dir + "/.git") {
-                if !DiskScanner.slimNames.contains((p as NSString).lastPathComponent) {
-                    return "It's part of a git repository. Only rebuildable folders like node_modules can go."
-                }
-                break
+        if p == h { return "It's your home folder." }
+        guard p.hasPrefix(h + "/") else {
+            guard (p as NSString).deletingLastPathComponent == "/Applications", p.hasSuffix(".app") else {
+                return "It's part of macOS or another account on this Mac."
             }
-            dir = (dir as NSString).deletingLastPathComponent
+            return NSWorkspace.shared.runningApplications.contains { $0.bundleURL?.resolvingSymlinksInPath().path == p }
+                ? "The app is open. Quit it first." : nil
+        }
+        let parts = p.dropFirst(h.count + 1).split(separator: "/").map(String.init)
+        if parts.count == 1, standardFolders.contains(parts[0]) { return "It's one of your Mac's standard folders. Open it to remove what's inside." }
+        if parts.first == ".Trash" { return "It's already in the Trash." }
+        if parts.first == ".ssh" || parts.first == ".gnupg" || parts.starts(with: ["Library", "Keychains"]) { return "It holds your passwords and keys." }
+        if let i = parts.firstIndex(of: ".git") {
+            return i == parts.count - 1 ? "It's a project's history on its own. Remove the whole project instead." : "It's part of a project's history."
         }
         if (busy ?? busyFolders()).contains(where: { $0 == p || $0.hasPrefix(p + "/") }) { return "Something is running in it." }
         return nil
     }
 
-    /// Dot folders (relative to home) that only hold tool caches, so they can go whole. Everything else under a dot
-    /// folder is settings or keys and stays.
+    /// What the Remove preview says about `path` before it goes, or nil when there's nothing to flag.
+    /// Runs git, so call it off the main thread.
+    static func trashWarning(_ path: String, home: String = Shell.home) -> String? {
+        let h = URL(fileURLWithPath: home).resolvingSymlinksInPath().path
+        let p = URL(fileURLWithPath: path).resolvingSymlinksInPath().path
+        let name = (p as NSString).lastPathComponent
+        guard p.hasPrefix(h + "/") else { return p.hasSuffix(".app") ? "The app goes. Its data in your Library stays." : nil }
+        let rel = String(p.dropFirst(h.count + 1))
+        if rel.hasPrefix("Library/") {
+            if rel.hasPrefix("Library/Caches/") || rel.hasPrefix("Library/Developer/Xcode/DerivedData/") { return nil }
+            if rel.hasPrefix("Library/Developer/CoreSimulator/Devices/") { return "The simulator's apps and data go. Xcode can make a new one." }
+            if rel.hasPrefix("Library/Mobile Documents/") { return "It's in iCloud Drive, so it's removed from all your devices." }
+            return "App data: the app loses this data and its settings."
+        }
+        // Inside a project: git can bring back what's committed.
+        var dir = (p as NSString).deletingLastPathComponent
+        while dir.hasPrefix(h + "/") {
+            if FileManager.default.fileExists(atPath: dir + "/.git") {
+                // node_modules, build output and the like rebuild on demand.
+                if p.dropFirst(dir.count + 1).split(separator: "/").contains(where: { DiskScanner.slimNames.contains(String($0)) }) { return nil }
+                let project = (dir as NSString).lastPathComponent
+                let st = Shell.run("git", ["-C", dir, "status", "--porcelain", "--untracked-files=all", "--", p], timeout: 20)
+                return st.ok && st.out.isEmpty ? "Part of \(project). Git can bring it back." : "Part of \(project), with changes that aren't committed."
+            }
+            dir = (dir as NSString).deletingLastPathComponent
+        }
+        let repos = gitRepos(under: p)
+        if !repos.isEmpty {
+            let unsaved = repos.filter(hasUnsavedWork).map { ($0 as NSString).lastPathComponent }
+            if unsaved.isEmpty { return "Holds \(repos.count) git project\(repos.count == 1 ? "" : "s"), all committed and pushed." }
+            let shown = unsaved.prefix(3).joined(separator: ", ") + (unsaved.count > 3 ? " and \(unsaved.count - 3) more" : "")
+            return "Work that isn't committed or pushed in \(shown)."
+        }
+        if name.hasPrefix("."), !toolCaches.contains(where: { rel == $0 || rel.hasPrefix($0 + "/") }) {
+            return "Settings and data for your tools."
+        }
+        return nil
+    }
+
+    /// Dot folders (relative to home) that only hold tool caches, so the preview has nothing to warn about.
     static let toolCaches: [String] = [".npm", ".cache", ".cocoapods", ".gradle/caches"]
 
-    /// Whether `path` holds a git repository or worktree a few levels down. Rebuildable folders aren't searched.
-    static func containsGit(_ path: String, maxDepth: Int = 6) -> Bool {
-        guard let e = FileManager.default.enumerator(at: URL(fileURLWithPath: path), includingPropertiesForKeys: nil,
-                                                     options: [.skipsPackageDescendants]) else { return false }
+    /// Git repositories and worktrees at or below `path`, a few levels down. Rebuildable folders aren't searched.
+    static func gitRepos(under path: String, maxDepth: Int = 6, limit: Int = 200) -> [String] {
+        let fm = FileManager.default
+        if fm.fileExists(atPath: path + "/.git") { return [path] }
+        guard let e = fm.enumerator(at: URL(fileURLWithPath: path), includingPropertiesForKeys: nil,
+                                    options: [.skipsPackageDescendants]) else { return [] }
+        var out: [String] = []
         for case let url as URL in e {
-            if url.lastPathComponent == ".git" { return true }
-            if e.level >= maxDepth || DiskScanner.slimNames.contains(url.lastPathComponent) { e.skipDescendants() }
+            if fm.fileExists(atPath: url.path + "/.git") {
+                out.append(url.path)
+                if out.count >= limit { break }
+                e.skipDescendants()
+            } else if e.level >= maxDepth || DiskScanner.slimNames.contains(url.lastPathComponent) || url.lastPathComponent == ".git" {
+                e.skipDescendants()
+            }
         }
-        return false
+        return out
+    }
+
+    /// Uncommitted changes, or commits on any branch that no remote has. A git that fails counts as unsaved.
+    static func hasUnsavedWork(_ repo: String) -> Bool {
+        let st = Shell.run("git", ["-C", repo, "status", "--porcelain", "--untracked-files=all"], timeout: 20)
+        guard st.ok, st.out.isEmpty else { return true }
+        let rl = Shell.run("git", ["-C", repo, "rev-list", "--count", "--branches", "--not", "--remotes"], timeout: 10)
+        return !rl.ok || (Int(rl.out.trimmingCharacters(in: .whitespacesAndNewlines)) ?? 1) > 0
     }
 
     /// Moves Space Lens picks to the Trash, checking each one again first. Recoverable until the Trash is emptied.
@@ -354,7 +404,6 @@ enum Actions {
             let name = (path as NSString).lastPathComponent
             guard FileManager.default.fileExists(atPath: path) else { o.failures.append("\(name) is no longer there."); continue }
             if let why = trashRefusal(path, busy: busy) { o.failures.append("Kept \(name): \(why)"); continue }
-            if containsGit(path) { o.failures.append("Kept \(name): it holds git repositories."); continue }
             do {
                 try FileManager.default.trashItem(at: URL(fileURLWithPath: path), resultingItemURL: nil)
                 o.trashedBytes += bytes

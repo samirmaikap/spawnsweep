@@ -65,6 +65,8 @@ struct DialogItem: Identifiable, Hashable {
     var detail: String = ""
     var checked = true
     var required = false
+    /// A caution shown under the label, like "Part of decize-webapp, with changes that aren't committed."
+    var warning: String?
 }
 
 /// A resource-changing action, shown as a preview first. Phases: preview → running → result.
@@ -600,14 +602,22 @@ final class AppModel {
     /// Remove in Space Lens: the ticked items, previewed, then to the Trash. Each is checked again as it goes.
     func reviewLensRemove(_ nodes: [LensNode]) {
         let list = nodes.sorted { $0.bytes > $1.bytes }
-        let total = list.reduce(Int64(0)) { $0 + $1.bytes }
         guard !list.isEmpty else { return }
+        // Warnings run git and walk folders, so they're worked out off the main thread before the preview opens.
+        Task.detached {
+            let warnings = list.map { Actions.trashWarning($0.path) }
+            await MainActor.run { self.presentLensRemove(list, warnings: warnings) }
+        }
+    }
+
+    private func presentLensRemove(_ list: [LensNode], warnings: [String?]) {
+        let total = list.reduce(Int64(0)) { $0 + $1.bytes }
         var spec = DialogSpec(icon: "trash",
                               title: list.count == 1 ? "Move \(list[0].name) to the Trash?" : "Move \(list.count) items to the Trash?",
                               subtitle: "About \(Fmt.bytes(total)) comes back once you empty the Trash.",
-                              items: list.map { n in
+                              items: zip(list, warnings).map { n, warning in
                                   let folder = (n.path as NSString).deletingLastPathComponent.replacingOccurrences(of: Shell.home, with: "~")
-                                  return DialogItem(id: n.path, label: n.name, detail: "\(Fmt.bytes(n.bytes)) · \(folder)")
+                                  return DialogItem(id: n.path, label: n.name, detail: "\(Fmt.bytes(n.bytes)) · \(folder)", warning: warning)
                               },
                               notes: ["Each item is checked again first. They stay in the Trash until you empty it, so you can put any back."],
                               confirmTitle: "Move to Trash")

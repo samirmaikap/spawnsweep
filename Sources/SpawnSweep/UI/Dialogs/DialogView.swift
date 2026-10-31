@@ -84,7 +84,13 @@ struct DialogView: View {
                         Image(systemName: item.checked ? "checkmark.square.fill" : "square")
                             .font(.system(size: 18))
                             .foregroundStyle(item.checked ? Theme.accent : Theme.secondary)
-                        Text(item.label).font(.system(size: 14)).foregroundStyle(Theme.text)
+                        VStack(alignment: .leading, spacing: 3) {
+                            Text(item.label).font(.system(size: 14)).foregroundStyle(Theme.text)
+                            if let w = item.warning {
+                                Label(w, systemImage: "exclamationmark.triangle.fill").font(.meta).foregroundStyle(Theme.amberText)
+                                    .fixedSize(horizontal: false, vertical: true)
+                            }
+                        }
                         Spacer()
                         Text(item.detail).font(.meta).foregroundStyle(Theme.secondary)
                     }

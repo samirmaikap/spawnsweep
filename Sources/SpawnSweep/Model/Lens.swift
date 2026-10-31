@@ -19,13 +19,10 @@ struct LensMap: Sendable {
     var sizes: [String: Int64] = [:]
     var children: [String: [String]] = [:]
     var locked: Set<String> = []
-    /// Folders that are a repository (they have a .git folder), for "holds repositories" checks.
-    var repos: Set<String> = []
     var diskTotal: Int64 = 0
     var diskUsed: Int64 = 0
     var cancelled = false
 
-    /// Fills `children` and `repos` from `sizes`; call once after the scan.
     /// Size and used space of the volume holding `root`, as Finder counts it.
     static func diskUsage(_ root: String) -> (total: Int64, used: Int64)? {
         guard let v = try? URL(fileURLWithPath: root).resourceValues(forKeys: [.volumeTotalCapacityKey, .volumeAvailableCapacityKey]),
@@ -33,16 +30,14 @@ struct LensMap: Sendable {
         return (Int64(total), Int64(total - free))
     }
 
+    /// Fills `children` from `sizes`; call once after the scan.
     mutating func index() {
-        children = [:]; repos = []
+        children = [:]
         for path in sizes.keys where path != "/" {
-            let parent = (path as NSString).deletingLastPathComponent
-            children[parent, default: []].append(path)
-            if (path as NSString).lastPathComponent == ".git" { repos.insert(parent) }
+            children[(path as NSString).deletingLastPathComponent, default: []].append(path)
         }
     }
 
-    func containsRepo(_ path: String) -> Bool { repos.contains { $0 == path || $0.hasPrefix(path + "/") } }
 
     /// After something goes to the Trash: it disappears and every folder above it shrinks by its size.
     mutating func remove(_ path: String, bytes: Int64) {
@@ -92,7 +87,7 @@ final class LensScan: @unchecked Sendable {
 struct LensNode: Identifiable, Hashable, Sendable {
     var id: String { path }
     let path: String
-    let name: String
+    var name: String
     let isDir: Bool
     var bytes: Int64
     var kind: LensKind

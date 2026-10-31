@@ -162,17 +162,25 @@ struct SpaceLensPage: View {
         HStack(spacing: 8) {
             navButton("chevron.left", enabled: lens.stack.count > 1) { lens.back() }
             navButton("chevron.right", enabled: !lens.forward.isEmpty) { lens.goForward() }
-            ScrollView(.horizontal, showsIndicators: false) {
-                HStack(spacing: 6) {
-                    ForEach(Array(lens.stack.enumerated()), id: \.offset) { i, path in
-                        if i > 0 { Image(systemName: "chevron.right").font(.system(size: 9, weight: .semibold)).foregroundStyle(Theme.secondary) }
-                        let last = i == lens.stack.count - 1
-                        Button { lens.up(to: i) } label: {
-                            Text(Self.title(path)).font(.system(size: 13, weight: last ? .semibold : .medium))
-                                .foregroundStyle(last ? Theme.text : Theme.secondary).lineLimit(1)
+            // Deep folders run past the edge, so the crumbs always scroll to the folder you're in.
+            ScrollViewReader { proxy in
+                ScrollView(.horizontal, showsIndicators: false) {
+                    HStack(spacing: 6) {
+                        ForEach(Array(lens.stack.enumerated()), id: \.offset) { i, path in
+                            if i > 0 { Image(systemName: "chevron.right").font(.system(size: 9, weight: .semibold)).foregroundStyle(Theme.secondary) }
+                            let last = i == lens.stack.count - 1
+                            Button { lens.up(to: i) } label: {
+                                Text(Self.title(path)).font(.system(size: 13, weight: last ? .semibold : .medium))
+                                    .foregroundStyle(last ? Theme.text : Theme.secondary).lineLimit(1)
+                            }
+                            .buttonStyle(.plain)
+                            .id(i)
                         }
-                        .buttonStyle(.plain)
                     }
+                }
+                .onAppear { proxy.scrollTo(lens.stack.count - 1, anchor: .trailing) }
+                .onChange(of: lens.stack) { _, stack in
+                    withAnimation(.easeOut(duration: 0.2)) { proxy.scrollTo(stack.count - 1, anchor: .trailing) }
                 }
             }
         }
@@ -299,6 +307,9 @@ struct SpaceLensPage: View {
             home + "/.docker": "Docker settings", home + "/.cursor": "Cursor data", home + "/.vscode": "VS Code extensions",
         ]
         if let k = known[n.path] { return k }
+        if (n.path as NSString).deletingLastPathComponent == home + "/Library/Developer/CoreSimulator/Devices" {
+            return "Simulator. Xcode can make a new one any time"
+        }
         switch n.kind {
         case .unmeasured: return LensAccess.full ? "Snapshots, purgeable and hidden system data"
                                                  : "Folders skipped without Full Disk Access, snapshots and system data"
@@ -355,7 +366,7 @@ struct LensMoon: View {
                          : nil)
                 .frame(width: r * 2, height: r * 2)
                 .shadow(color: .black.opacity(hovered ? 0.5 : 0.32), radius: r * (hovered ? 0.2 : 0.12), x: r * 0.03, y: r * (hovered ? 0.13 : 0.07))
-            if r > 36 || hovered {
+            if r > 36 {
                 VStack(spacing: 3) {
                     Text(node.name).font(.system(size: r > 90 ? 16 : r > 55 ? 13 : 11, weight: .semibold)).lineLimit(1).minimumScaleFactor(0.6)
                     Text(node.locked ? "Not measured" : Fmt.bytes(node.bytes)).font(.system(size: r > 90 ? 14 : 11, weight: .medium)).monospacedDigit().opacity(0.8)
@@ -367,6 +378,18 @@ struct LensMoon: View {
                 }
                 .foregroundStyle(Self.ink(node.kind))
                 .frame(width: max(r * 1.6, hovered ? 120 : 0))
+            } else if hovered {
+                // Too small to hold its own label: a readable tag above the moon instead.
+                VStack(spacing: 2) {
+                    Text(node.name).font(.system(size: 12, weight: .semibold)).foregroundStyle(Theme.text).lineLimit(1)
+                    Text(node.locked ? "Not measured" : Fmt.bytes(node.bytes)).font(.system(size: 11, weight: .medium)).monospacedDigit()
+                        .foregroundStyle(Theme.secondary)
+                }
+                .padding(.horizontal, 10).padding(.vertical, 6)
+                .background(RoundedRectangle(cornerRadius: 10, style: .continuous).fill(Theme.surface)
+                    .shadow(color: .black.opacity(0.3), radius: 6, y: 3))
+                .fixedSize()
+                .offset(y: -r - 26)
             }
             if checked {
                 Image(systemName: "checkmark.circle.fill").font(.system(size: 20)).foregroundStyle(.white, Theme.accent)

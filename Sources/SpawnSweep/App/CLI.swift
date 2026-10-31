@@ -216,30 +216,50 @@ extension CLI {
         assert(SpaceLensPage.timeLeft(elapsed: 120, done: 0.9) == "Less than a minute left")
         // Folder boundaries: a Docker stack in /app-db doesn't belong to a session in /app.
         assert(Scanner.inside("/s/app", "/s/app") && Scanner.inside("/s/app/api", "/s/app") && !Scanner.inside("/s/app-db", "/s/app"))
-        // Space Lens never trashes anything outside home, app data, standard folders, settings, repos, or busy folders.
+        // Space Lens Remove works like a cleaner app: only macOS, other accounts, your home and its standard folders,
+        // keys, a project's .git on its own, the Trash, and busy folders are locked. The rest goes with a preview warning.
         let fakeHome = NSTemporaryDirectory() + "lens-\(UUID().uuidString)", fm0 = FileManager.default
-        for d in ["Documents", "Library/Caches/x", ".ssh", "code/repo/.git/objects", "code/plain"] {
+        for d in ["Documents", "Library/Caches/x", "Library/Application Support/x", "Library/Mobile Documents/x", "Library/Keychains/x",
+                  ".ssh/keys", ".npm/_cacache", ".gradle/caches", ".Trash/old", "code/repo/.git/objects", "code/repo/src",
+                  "code/repo/node_modules/x", "code/plain"] {
             try? fm0.createDirectory(atPath: fakeHome + "/" + d, withIntermediateDirectories: true)
         }
         func refused(_ rel: String, busy: [String] = []) -> Bool { Actions.trashRefusal(fakeHome + "/" + rel, home: fakeHome, busy: busy) != nil }
-        assert(Actions.trashRefusal("/etc/hosts", home: fakeHome, busy: []) != nil, "trash allowed outside home")
+        func warning(_ rel: String) -> String { Actions.trashWarning(fakeHome + "/" + rel, home: fakeHome) ?? "" }
+        assert(Actions.trashRefusal("/System/Library", home: fakeHome, busy: []) != nil, "part of macOS was allowed")
+        assert(Actions.trashRefusal("/Applications/Utilities", home: fakeHome, busy: []) != nil, "a folder in Applications was allowed")
+        assert(Actions.trashRefusal("/Applications/NoSuchApp.app", home: fakeHome, busy: []) == nil, "an app that isn't open was refused")
         assert(Actions.trashRefusal(fakeHome, home: fakeHome, busy: []) != nil, "the home folder itself was allowed")
-        assert(refused("Library/Caches/x"), "app data was allowed")
-        assert(refused("Documents") && refused(".ssh"), "a standard folder or settings folder was allowed")
-        assert(refused("code/repo") && refused("code/repo/.git/objects"), "a git repository was allowed")
+        assert(refused("Documents") && refused(".ssh") && refused(".ssh/keys") && refused("Library/Keychains/x") && refused(".Trash"),
+               "a standard folder, keys or the Trash was allowed")
+        assert(refused("code/repo/.git") && refused("code/repo/.git/objects"), "a project's history on its own was allowed")
         assert(refused("code/plain", busy: [fakeHome + "/code/plain/app"]), "a folder something runs in was allowed")
-        assert(!refused("code/plain") && !refused("Documents/notes.txt"), "a plain folder or file was refused")
-        // Whole-disk Remove: inside a repo only rebuildable folders; repo containers and worktrees never; dot folders only known caches.
-        for d in ["code/repo/src", "code/repo/node_modules/x", "code/repo/.claude/worktrees/wt", ".npm/_cacache", ".gradle/caches", ".ssh/keys"] {
-            try? fm0.createDirectory(atPath: fakeHome + "/" + d, withIntermediateDirectories: true)
+        for rel in ["Library/Caches/x", "Library/Application Support/x", "code", "code/repo", "code/repo/src", "code/repo/node_modules",
+                    ".gradle", ".npm", "code/plain", "Documents/notes.txt"] {
+            assert(!refused(rel), "\(rel) was refused")
         }
-        fm0.createFile(atPath: fakeHome + "/code/repo/.claude/worktrees/wt/.git", contents: Data("gitdir: x".utf8))
-        assert(refused("code/repo/src"), "code inside a repo was allowed")
-        assert(!refused("code/repo/node_modules"), "node_modules inside a repo was refused")
-        assert(refused("code/repo/.claude/worktrees") && refused("code/repo/.claude/worktrees/wt"), "a worktree or its container was allowed")
-        assert(!refused(".npm") && !refused(".gradle/caches"), "a known tool cache was refused")
-        assert(refused(".gradle") && refused(".ssh/keys"), "a settings folder or something inside one was allowed")
-        assert(Actions.containsGit(fakeHome + "/code") && !Actions.containsGit(fakeHome + "/Documents"), "a folder holding repositories wasn't spotted")
+        assert(warning("Library/Caches/x").isEmpty && warning("code/repo/node_modules").isEmpty && warning(".npm").isEmpty
+               && warning("Documents/notes.txt").isEmpty, "something safe to clear got a warning")
+        assert(warning("Library/Application Support/x").hasPrefix("App data") && warning("Library/Mobile Documents/x").contains("iCloud"))
+        assert(warning(".gradle").hasPrefix("Settings") && warning("code/repo/src").hasPrefix("Part of repo"), "a tool folder or project file wasn't flagged")
+        assert(warning("code").contains("isn't committed or pushed in repo"), "a folder of projects with unsaved work wasn't flagged")
+        assert(Actions.gitRepos(under: fakeHome + "/code").map { ($0 as NSString).lastPathComponent } == ["repo"]
+               && Actions.gitRepos(under: fakeHome + "/Documents").isEmpty, "projects under a folder weren't found")
+        // Unsaved work: a real clone is clean only once its commit is pushed, and an untracked file makes it unsaved again.
+        let git = { (args: [String]) in _ = Shell.run("git", ["-c", "user.name=t", "-c", "user.email=t@t", "-c", "init.defaultBranch=main"] + args, timeout: 20) }
+        git(["init", "-q", "--bare", fakeHome + "/remote.git"]); git(["clone", "-q", fakeHome + "/remote.git", fakeHome + "/clean"])
+        fm0.createFile(atPath: fakeHome + "/clean/a.txt", contents: Data("a".utf8))
+        git(["-C", fakeHome + "/clean", "add", "."]); git(["-C", fakeHome + "/clean", "commit", "-qm", "a"])
+        assert(Actions.hasUnsavedWork(fakeHome + "/clean"), "a commit that isn't pushed counted as saved")
+        git(["-C", fakeHome + "/clean", "push", "-q", "origin", "HEAD"])
+        assert(!Actions.hasUnsavedWork(fakeHome + "/clean"), "a clean, pushed clone counted as unsaved")
+        fm0.createFile(atPath: fakeHome + "/clean/b.txt", contents: Data("b".utf8))
+        assert(Actions.hasUnsavedWork(fakeHome + "/clean"), "an untracked file counted as saved")
+        // Simulator folders show the device, not the UUID.
+        let sim = Device(udid: "ABC-123", name: "iPhone 16 Pro", runtime: "iOS 18.2", booted: false, dataBytes: 0, lastUsed: nil)
+        let named = LensStore.named([LensNode(path: "/d/ABC-123", name: "ABC-123", isDir: true, bytes: 1, kind: .appData),
+                                     LensNode(path: "/d/other", name: "other", isDir: true, bytes: 1, kind: .appData)], devices: [sim])
+        assert(named.map(\.name) == ["iPhone 16 Pro · iOS 18.2", "other"], "a simulator folder kept its UUID name")
         try? fm0.removeItem(atPath: fakeHome)
         // Moons never overlap, and the same sizes always pack the same way.
         let radii: [CGFloat] = (0..<30).map { (i: Int) -> CGFloat in CGFloat((i * 37) % 41 + 4) }.sorted(by: >)
