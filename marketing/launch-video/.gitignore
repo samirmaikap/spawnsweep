@@ -1,0 +1,4 @@
+node_modules/
+out/
+# Made by `npm run sfx`, which `npm run render` runs first.
+public/sfx/

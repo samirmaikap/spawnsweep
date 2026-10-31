@@ -9,6 +9,10 @@
 </p>
 
 <p align="center">
+  <img src="docs/images/launch.gif" width="100%" alt="SpawnSweep in 20 seconds: agents leave ports, simulators and build data running; SpawnSweep groups them by session and puts them away">
+</p>
+
+<p align="center">
   <a href="#install">Install</a> ·
   <a href="#what-it-does">What it does</a> ·
   <a href="#spawnsweep-pro">Pro</a> ·
