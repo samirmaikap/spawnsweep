@@ -119,4 +119,31 @@ enum Integrations {
         guard Shell.which("claude") != nil else { return Shell.Result(code: 127, out: "", err: "The claude command isn't on this Mac's PATH. Copy the command and run it in a terminal.") }
         return Shell.run("claude", ["mcp", "add", "--scope", "user", "spawnsweep", "--", executablePath, "--mcp"], timeout: 30)
     }
+
+    // MARK: - Claude Code pane plugin (claude-plugin/ in this repo)
+
+    static let paneMarketplace = "samirmaikap/spawnsweep"
+    static let panePlugin = "spawnsweep-pane@spawnsweep"
+    static var paneCommands: String {
+        "claude plugin marketplace add \(paneMarketplace)\nclaude plugin install \(panePlugin) --scope user"
+    }
+
+    /// Whether Claude Code's user settings have the pane plugin turned on, so a switch flipped in Claude's
+    /// /plugin menu shows here too.
+    static func panePluginEnabled() -> Bool {
+        guard let data = FileManager.default.contents(atPath: claudeSettingsPath),
+              let json = try? JSONSerialization.jsonObject(with: data) as? [String: Any],
+              let plugins = json["enabledPlugins"] as? [String: Any] else { return false }
+        return plugins[panePlugin] as? Bool == true
+    }
+
+    /// On: adds the marketplace and installs the plugin at user scope. Both are safe to repeat, and installing
+    /// a disabled plugin turns it back on. Off: disables it, keeping it installed so on is quick.
+    static func setPanePlugin(on: Bool) -> Shell.Result {
+        guard Shell.which("claude") != nil else { return Shell.Result(code: 127, out: "", err: "The claude command isn't on this Mac's PATH. Copy the commands and run them in a terminal.") }
+        if !on { return Shell.run("claude", ["plugin", "disable", panePlugin, "--scope", "user"], timeout: 60) }
+        let added = Shell.run("claude", ["plugin", "marketplace", "add", paneMarketplace], timeout: 120)
+        guard added.ok else { return added }
+        return Shell.run("claude", ["plugin", "install", panePlugin, "--scope", "user"], timeout: 120)
+    }
 }

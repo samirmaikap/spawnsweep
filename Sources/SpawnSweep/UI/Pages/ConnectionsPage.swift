@@ -4,6 +4,8 @@ import AppKit
 /// Agent connections (observing vs. the cleanup hook) and the local MCP server.
 struct ConnectionsPage: View {
     @Environment(AppModel.self) private var model
+    /// The pane switch's new value while the claude command runs.
+    @State private var panePending: Bool?
 
     private static let agents: [(agent: Agent, name: String, symbol: String)] = [
         (.claudeCode, "Claude Code", "terminal"),
@@ -17,6 +19,7 @@ struct ConnectionsPage: View {
         let _ = model.dialog?.id   // re-read statuses when a setup dialog opens or closes
         let statuses = Self.agents.map { Integrations.status(of: $0.agent) }
         let mcpOn = Integrations.mcpConfigured()
+        let paneOn = panePending ?? Integrations.panePluginEnabled()
 
         PageScroll {
             PageHeader(title: "Good habits, built in.", subtitle: "Help your agents reuse what exists and put away what they start.")
@@ -48,6 +51,46 @@ struct ConnectionsPage: View {
                     }
                 }
             }
+
+            Panel(title: "Claude Code pane", boxed: true) {
+                HStack(alignment: .top, spacing: 20) {
+                    IconTile(symbol: "moon", size: 56)
+                    VStack(alignment: .leading, spacing: 12) {
+                        Text("See what's running in a pane beside your Claude chat. A moon with a count in Claude's footer opens it.")
+                            .font(.system(size: 13)).foregroundStyle(Theme.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                        HStack(spacing: 10) {
+                            Toggle("Show in Claude Code", isOn: Binding(get: { paneOn }, set: { setPane($0) }))
+                                .toggleStyle(.switch).tint(Theme.accent).labelsHidden()
+                                .disabled(panePending != nil)
+                            Text(panePending != nil ? "Updating Claude Code…" : paneOn ? "On in Claude Code" : "Off")
+                                .font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.text)
+                            if panePending != nil { ProgressView().controlSize(.small) }
+                        }
+                        Text("New Claude sessions pick up the change. You can also turn it on or off in Claude, under /plugin.")
+                            .font(.meta).foregroundStyle(Theme.secondary)
+                            .fixedSize(horizontal: false, vertical: true)
+                    }
+                }
+            }
+        }
+    }
+
+    /// Runs the claude command off the main thread; the switch then reads Claude's settings again.
+    private func setPane(_ on: Bool) {
+        let model = model
+        panePending = on
+        Task {
+            let r = await Task.detached { Integrations.setPanePlugin(on: on) }.value
+            panePending = nil
+            guard !r.ok else { return }
+            let msg = (r.err.isEmpty ? r.out : r.err).trimmingCharacters(in: .whitespacesAndNewlines)
+            model.present(DialogSpec(icon: "moon", title: "Claude Code wasn't changed.",
+                                     subtitle: on ? "Copy the commands and run them in a terminal instead."
+                                                  : "Turn the pane off in Claude instead, under /plugin.",
+                                     warning: msg.isEmpty ? "The claude command exited with code \(r.code)." : msg,
+                                     confirmTitle: "OK",
+                                     custom: on ? AnyView(CommandBox(text: Integrations.paneCommands)) : nil))
         }
     }
 
