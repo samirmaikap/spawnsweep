@@ -56,7 +56,7 @@ struct ConnectionsPage: View {
                 HStack(alignment: .top, spacing: 20) {
                     IconTile(symbol: "moon", size: 56)
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("See what's running in a pane beside your Claude chat. A moon with a count in Claude's footer opens it.")
+                        Text("See what's running in a pane beside your Claude chat, with a running count under the prompt. Type /spawnsweep in Claude to open it.")
                             .font(.system(size: 13)).foregroundStyle(Theme.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                         HStack(spacing: 10) {
