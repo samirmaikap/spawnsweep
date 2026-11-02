@@ -1,5 +1,5 @@
 <p align="center">
-  <img src="docs/images/icon.png" width="128" alt="SpawnSweep icon">
+  <img src="docs/images/icon.png" width="120" alt="SpawnSweep icon">
 </p>
 
 <h1 align="center">SpawnSweep</h1>
@@ -10,38 +10,54 @@
 </p>
 
 <p align="center">
+  <a href="https://github.com/samirmaikap/spawnsweep/releases/latest/download/SpawnSweep.zip"><img alt="Download for macOS" src="https://img.shields.io/badge/Download-for%20macOS-0E9F5B?style=for-the-badge&logo=apple&logoColor=white"></a>
+  &nbsp;
+  <a href="https://samirmaikap.github.io/spawnsweep/"><img alt="Website" src="https://img.shields.io/badge/Website-samirmaikap.github.io%2Fspawnsweep-263A30?style=for-the-badge"></a>
+</p>
+
+<p align="center">
+  <a href="https://github.com/samirmaikap/spawnsweep/releases/latest"><img alt="Latest release" src="https://img.shields.io/github/v/release/samirmaikap/spawnsweep?label=release&color=0E9F5B"></a>
+  <img alt="macOS 14 or later on Apple silicon" src="https://img.shields.io/badge/macOS-14%2B%20on%20Apple%20silicon-263A30">
+  <a href="LICENSE"><img alt="MIT license" src="https://img.shields.io/github/license/samirmaikap/spawnsweep?color=263A30"></a>
+  <img alt="Native SwiftUI" src="https://img.shields.io/badge/native-SwiftUI-263A30">
+  <a href="https://github.com/samirmaikap/spawnsweep/stargazers"><img alt="GitHub stars" src="https://img.shields.io/github/stars/samirmaikap/spawnsweep?style=social"></a>
+</p>
+
+<p align="center">
   <img src="docs/images/launch.gif" width="100%" alt="SpawnSweep demo: AI coding agents leave dev servers, ports, simulators and build data running on a Mac; SpawnSweep groups them by session and cleans them up">
 </p>
 
 <p align="center">
   <a href="#install">Install</a> ·
-  <a href="#what-it-does">What it does</a> ·
+  <a href="#highlights">Highlights</a> ·
+  <a href="#inside-claude">Inside Claude</a> ·
   <a href="#spawnsweep-pro">Pro</a> ·
   <a href="#safety">Safety</a> ·
-  <a href="#faq">FAQ</a> ·
-  <a href="#support">Support</a>
+  <a href="#faq">FAQ</a>
 </p>
 
 ---
 
-SpawnSweep is a free, open-source Mac app that cleans up after AI coding agents. Claude Code, Codex, Cursor and friends start dev servers, watchers, headless browsers, simulators, Docker stacks and git worktrees. When the session ends, a lot of it keeps running, holding ports and memory and taking disk space. SpawnSweep finds it, tells you which agent started it, and cleans up with a preview first, every time.
+## Your agents start things. Nobody stops them.
+
+- `Error: Port 3000 is already in use`, again.
+- Yesterday's `next dev`, `vite` and `vitest --watch`, still running from sessions you closed hours ago.
+- An iPhone simulator holding 1.6 GB of memory since lunch.
+- A hundred git worktrees, each with its own `node_modules`.
+
+**SpawnSweep is a free, open-source Mac app that cleans up after AI coding agents.** It finds the dev servers, busy ports, simulators, Docker stacks and git worktrees that Claude Code, Codex, Cursor, Gemini and Aider leave behind, tells you which session started each one, and puts them away with a preview first, every time.
 
 Native SwiftUI for macOS 14 or later on Apple silicon. Free and open source (MIT); SpawnSweep Pro is a one-time $9 for up to 3 Macs. Everything stays on your Mac. No account, no telemetry.
 
-<p align="center">
-  <img src="docs/images/this-mac.jpg" width="49%" alt="SpawnSweep This Mac page: disk space, memory, junk files and large files on macOS">
-  <img src="docs/images/autopilot.jpg" width="49%" alt="SpawnSweep Autopilot: dry-run cleanup rules for idle simulators, finished agent sessions, end of day, battery saver and quiet git worktrees">
-</p>
-
 ## Install
 
-**Download** (macOS 14 or later, Apple silicon). The easiest way is to paste this into Terminal:
+Paste this into Terminal. It downloads the latest release into Applications and opens it, with no macOS warning:
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/samirmaikap/spawnsweep/main/scripts/install.sh | bash
 ```
 
-It downloads the latest release into Applications and opens it, with no macOS warning. You can also download `SpawnSweep.zip` from [Releases](https://github.com/samirmaikap/spawnsweep/releases/latest), open it, and move SpawnSweep to Applications. The download includes SpawnSweep Pro, which a license key unlocks.
+Or **[download SpawnSweep.zip](https://github.com/samirmaikap/spawnsweep/releases/latest/download/SpawnSweep.zip)**, open it, and move SpawnSweep to Applications. The download includes SpawnSweep Pro, which a license key unlocks; everything free works right away.
 
 ### If macOS says "SpawnSweep" Not Opened
 
@@ -57,35 +73,37 @@ Or clear the download flag in Terminal and open it normally (change the path if 
 xattr -dr com.apple.quarantine /Applications/SpawnSweep.app
 ```
 
-**Build from source** (Xcode 16 or the Swift 6 toolchain):
+## Highlights
 
-```bash
-git clone https://github.com/samirmaikap/spawnsweep.git
-cd spawnsweep
-scripts/bundle.sh
-open "build/SpawnSweep.app"
-```
+<p align="center">
+  <img src="docs/images/this-mac.jpg" width="49%" alt="SpawnSweep This Mac page: disk space, memory, junk files and large files on macOS">
+  <img src="docs/images/autopilot.jpg" width="49%" alt="SpawnSweep Autopilot: dry-run cleanup rules for idle simulators, finished agent sessions, end of day, battery saver and quiet git worktrees">
+</p>
 
-`bundle.sh` builds a release binary, wraps it in `build/SpawnSweep.app` with its icon, and signs it ad hoc.
-
-Building from source gives you the free edition. Junk cleaning, large & old files and Autopilot's Ask first and Automatic modes are in SpawnSweep Pro, which comes with the official download.
-
-## What it does
-
-| | |
-|---|---|
-| **Sessions** | Every agent session (Claude Code, Claude app, Codex, Cursor, Gemini, Aider) with what it still has running, and an end-of-day sweep |
-| **Ports board** | Every localhost listener with its project, branch, uptime and session. Free a port in one click |
-| **Resources** | Booted simulators and emulators, unused simulator devices, Docker stacks, watchers and headless browsers |
-| **This Mac** | Disk and memory at a glance, measured next to your agent leftovers. Pro adds junk and large & old files |
-| **Storage** | Worktrees per repo with status and size. Slim them (remove rebuildable folders), push and remove, recycle merged ones |
-| **Recycle bin** | Removed worktrees with their branch, commit and saved ignored files. Restore within the retention window |
-| **Autopilot** | Rules that start as dry runs: simulator bedtime, finished-session leftovers, end of day, battery saver, low disk, merged worktrees |
-| **Connections** | Agent detection, a Claude Code SessionEnd hook, an MCP server agents can ask before starting another dev server, and a [Claude Code pane](#claude-code-pane) |
-| **Safety & Activity** | Public tunnels, `.env` copies (locations only), protected sessions and ports, and a log of every change with its way back |
-| **Notifications** | A heads-up when an agent session starts, a simulator boots or a worktree appears, each with its own switch in Settings |
+- **Every agent session, and what it left running.** Claude Code, the Claude app, Codex, Cursor, Gemini and Aider, each with its dev servers, watchers, headless browsers and tunnels. Put a finished session away in one click, or sweep them all at the end of the day.
+- **A ports board.** Every localhost listener with its project, git branch, uptime and the session that started it. Free a port in one click.
+- **Git worktrees under control.** Size and status per repo. Slim the rebuildable folders, push and remove, or recycle merged ones, with `.env` and other ignored files saved so Restore brings everything back.
+- **Simulators and Docker.** Booted simulators and emulators, unused simulator devices, and Docker stacks, each stopped as one unit.
+- **Know when something starts.** A notification when an agent session starts, a simulator boots or a worktree appears, each with its own switch.
+- **Inside Claude.** A 🌔 with the count of what's running in Claude's footer opens a pane beside your chat. [More below](#inside-claude).
+- **Autopilot.** Rules that start as dry runs: simulator bedtime, finished-session leftovers, end of day, battery saver, low disk, merged worktrees.
+- **Safe by design.** A preview before every change, gentle stops, and a log of every change with its way back. [The rules](#safety).
 
 The menu bar shows what's running right now, memory used, disk free, and one button to put leftovers away.
+
+## Inside Claude
+
+A plugin for Claude Code and the Claude desktop app puts what SpawnSweep sees in a pane next to your chat: each agent session with its dev servers, ports and Docker stacks, loose simulators, and your git worktrees. A moon with the count of what's running (🌔 4) sits in the footer; click it, or type `/spawnsweep`, to open the pane. It refreshes every 30 seconds and needs SpawnSweep in Applications.
+
+The easiest way to add it: open SpawnSweep and click **Add to Claude** on the Sessions page, or turn on **Connections › Claude Code pane**. Or, at the prompt of a Claude Code terminal session:
+
+```
+/plugin install spawnsweep --marketplace samirmaikap/spawnsweep
+```
+
+In the desktop app, click **+** next to the prompt box, then **Plugins**, **Add marketplace** with `samirmaikap/spawnsweep`, then **Add plugin**. The plugin's source and details are in [`claude-plugin/`](claude-plugin).
+
+SpawnSweep also gives agents an MCP server they can ask "is a dev server already running for this repo?" before starting another one, and a Claude Code SessionEnd hook that puts away what a session started when it ends. Both are a click away in **Connections**.
 
 ## How it compares
 
@@ -108,11 +126,11 @@ Everything above is free unless it says Pro. Pro adds the parts that clean your 
 - **Autopilot that acts**: rules that ask first with a notification, or act on their own and log a way back.
 - **Rules that run themselves**: clean up at the end of the day, battery saver when unplugged, room to breathe when the disk runs low.
 
-The official download scans for free, so you can see what Pro would clean before you decide. Pro is a one-time $9 purchase through [Dodo Payments](https://dodopayments.com); the key arrives by email and you paste it into **Settings › SpawnSweep Pro** in the official download. Source builds don't include Pro, so a key does nothing there.
+The official download scans for free, so you can see what Pro would clean before you decide. Pro is a one-time $9 purchase through [Dodo Payments](https://dodopayments.com); the key arrives by email and you paste it into **Settings › SpawnSweep Pro** in the official download. Source builds don't include Pro, so a key does nothing there. A key works on up to 3 Macs and keeps working offline for weeks between checks.
 
-A key works on up to 3 Macs and keeps working offline for weeks between checks.
-
-**[Get SpawnSweep Pro](https://checkout.dodopayments.com/buy/pdt_0Nqn3fOmfcDQwcQysr6t5?quantity=1)**
+<p align="center">
+  <a href="https://checkout.dodopayments.com/buy/pdt_0Nqn3fOmfcDQwcQysr6t5?quantity=1"><img alt="Get SpawnSweep Pro, $9 once" src="https://img.shields.io/badge/Get%20SpawnSweep%20Pro-%249%20once-0E9F5B?style=for-the-badge"></a>
+</p>
 
 <p align="center">
   <img src="docs/images/pro.jpg" width="70%" alt="SpawnSweep Pro: junk cleaner and large & old files finder for Mac">
@@ -131,28 +149,6 @@ SpawnSweep deletes as little as possible and asks first.
 - Docker volumes are never touched.
 
 `SpawnSweep --selftest` runs the checks behind these rules (ignored-file rules, license grace, rule migration; the official build adds the cleaners' path-containment checks).
-
-## Helpers in the same binary
-
-```bash
-"build/SpawnSweep.app/Contents/MacOS/SpawnSweep" --scan          # print what it sees
-"build/SpawnSweep.app/Contents/MacOS/SpawnSweep" --scan --json   # the same as JSON: sessions, what runs, simulators, worktrees
-"build/SpawnSweep.app/Contents/MacOS/SpawnSweep" --mcp           # MCP server (stdio) for agents
-"build/SpawnSweep.app/Contents/MacOS/SpawnSweep" --session-end   # Claude Code SessionEnd hook (reads JSON on stdin)
-"build/SpawnSweep.app/Contents/MacOS/SpawnSweep" --selftest      # run the safety checks
-```
-
-**Connections › Claude Code** installs the hook into `~/.claude/settings.json` (only its own entry, with a `.bak` copy). **Connections › Configure MCP** registers the MCP server with `claude mcp add`.
-
-## Claude Code pane
-
-A plugin for Claude Code and the Claude desktop app puts what SpawnSweep sees in a side pane next to your chat: each agent session with its dev servers, ports and Docker stacks, and loose simulators. A moon with the count of what's running (🌔 4) sits in the footer; click it, or type `/spawnsweep`, to open the pane. It refreshes every 30 seconds and needs SpawnSweep in Applications. At the prompt of a Claude Code terminal session:
-
-```
-/plugin install spawnsweep --marketplace samirmaikap/spawnsweep
-```
-
-In the desktop app, click **+** next to the prompt box, then **Plugins**, **Add marketplace** with `samirmaikap/spawnsweep`, then **Add plugin**. The plugin's source and details are in [`claude-plugin/`](claude-plugin).
 
 ## Privacy
 
@@ -188,22 +184,52 @@ For developers, mostly. SpawnSweep cleans what general Mac cleaners don't see: a
 
 Yes. The app and its source code are free under the MIT license. SpawnSweep Pro, a one-time $9 purchase for up to 3 Macs, unlocks the junk cleaner, large & old files, and Autopilot rules that act on their own.
 
-## Project layout
+## For scripts and agents
+
+The app's binary has helpers you can run from Terminal (`/Applications/SpawnSweep.app/Contents/MacOS/SpawnSweep`, or `build/…` in a source build):
+
+```bash
+SpawnSweep --scan          # print what it sees
+SpawnSweep --scan --json   # the same as JSON: sessions, what runs, simulators, worktrees
+SpawnSweep --mcp           # MCP server (stdio) for agents
+SpawnSweep --session-end   # Claude Code SessionEnd hook (reads JSON on stdin)
+SpawnSweep --selftest      # run the safety checks
+```
+
+**Connections › Claude Code** installs the hook into `~/.claude/settings.json` (only its own entry, with a `.bak` copy). **Connections › Configure MCP** registers the MCP server with `claude mcp add`.
+
+## Build from source
+
+With Xcode 16 or the Swift 6 toolchain:
+
+```bash
+git clone https://github.com/samirmaikap/spawnsweep.git
+cd spawnsweep
+scripts/bundle.sh
+open "build/SpawnSweep.app"
+```
+
+`bundle.sh` builds a release binary, wraps it in `build/SpawnSweep.app` with its icon, and signs it ad hoc. Building from source gives you the free edition; junk cleaning, large & old files and Autopilot's Ask first and Automatic modes are in SpawnSweep Pro, which comes with the official download.
 
 ```
 Sources/SpawnSweep/
   Model/       Sessions, resources, worktrees, rules, prefs, activity
   Engine/      ProcessTable (ps + libproc + lsof), Scanner, DiskScanner, Junk, LargeFiles,
                SystemStats, Actions, License, Store, Shell
-  App/         AppModel, Autopilot, app entry and menu bar, CLI (hook, MCP, self-test), integrations
+  App/         AppModel, Autopilot, app entry and menu bar, CLI (hook, MCP, JSON scan, self-test), integrations
   UI/          Theme (design system), RootView, dialogs, menu bar, pages
   Pro/         (private; not in this repo)
-docs/DESIGN.md Design guidelines
+claude-plugin/ The SpawnSweep pane for Claude Code and the Claude app
+docs/          The website (GitHub Pages) and DESIGN.md
 ```
 
 ## Support
 
-SpawnSweep is made by one person. If it gave you some disk space back, the best way to support it is [SpawnSweep Pro](#spawnsweep-pro): it funds the free app and unlocks the cleaning and automation features. Bug reports and pull requests are welcome in [Issues](https://github.com/samirmaikap/spawnsweep/issues).
+SpawnSweep is made by one person. If it saved you a `kill -9` or gave you some disk space back:
+
+- ⭐ **Star this repo.** It's how other developers find SpawnSweep.
+- **[Get SpawnSweep Pro](#spawnsweep-pro).** It funds the free app and unlocks the cleaning and automation features.
+- **Report bugs and ideas** in [Issues](https://github.com/samirmaikap/spawnsweep/issues). Pull requests are welcome.
 
 ## License
 
