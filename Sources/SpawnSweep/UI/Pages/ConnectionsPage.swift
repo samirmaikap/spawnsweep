@@ -78,19 +78,10 @@ struct ConnectionsPage: View {
 
     /// Runs the claude command off the main thread; the switch then reads Claude's settings again.
     private func setPane(_ on: Bool) {
-        let model = model
         panePending = on
         Task {
-            let r = await Task.detached { Integrations.setPanePlugin(on: on) }.value
+            _ = await model.setClaudePane(on)
             panePending = nil
-            guard !r.ok else { return }
-            let msg = (r.err.isEmpty ? r.out : r.err).trimmingCharacters(in: .whitespacesAndNewlines)
-            model.present(DialogSpec(icon: "moon", title: "Claude Code wasn't changed.",
-                                     subtitle: on ? "Copy the commands and run them in a terminal instead."
-                                                  : "Turn the pane off in Claude instead, under /plugin.",
-                                     warning: msg.isEmpty ? "The claude command exited with code \(r.code)." : msg,
-                                     confirmTitle: "OK",
-                                     custom: on ? AnyView(CommandBox(text: Integrations.paneCommands)) : nil))
         }
     }
 
@@ -314,5 +305,66 @@ private struct CommandBox: View {
         .padding(14)
         .frame(maxWidth: .infinity, alignment: .leading)
         .background(Theme.tint, in: RoundedRectangle(cornerRadius: 10, style: .continuous))
+    }
+}
+
+extension AppModel {
+    /// Turns the Claude pane plugin on or off through the claude command, off the main thread. On failure it shows
+    /// what went wrong, with the commands to run by hand when turning it on. True when Claude was changed.
+    func setClaudePane(_ on: Bool) async -> Bool {
+        let r = await Task.detached { Integrations.setPanePlugin(on: on) }.value
+        guard !r.ok else { return true }
+        let msg = (r.err.isEmpty ? r.out : r.err).trimmingCharacters(in: .whitespacesAndNewlines)
+        present(DialogSpec(icon: "moon", title: "Claude Code wasn't changed.",
+                           subtitle: on ? "Copy the commands and run them in a terminal instead."
+                                        : "Turn the pane off in Claude instead, under /plugin.",
+                           warning: msg.isEmpty ? "The claude command exited with code \(r.code)." : msg,
+                           confirmTitle: "OK",
+                           custom: on ? AnyView(CommandBox(text: Integrations.paneCommands)) : nil))
+        return false
+    }
+}
+
+/// The Sessions page's offer to add the SpawnSweep pane to Claude, shown where Claude is on this Mac and the pane
+/// isn't on yet. Gone after Not now, or once added; Connections keeps the switch either way.
+struct ClaudePaneBanner: View {
+    @Environment(AppModel.self) private var model
+    @State private var step = Step.offer
+    private enum Step { case offer, adding, added }
+
+    var body: some View {
+        if !model.prefs.claudePaneBannerDismissed,
+           step != .offer || (Integrations.claudeOnThisMac && !Integrations.panePluginEnabled()) {
+            HStack(alignment: .center, spacing: 20) {
+                IconTile(symbol: "sidebar.right", size: 58)
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(step == .added ? "Added to Claude." : "See this inside Claude.")
+                        .font(.system(size: 17, weight: .semibold)).foregroundStyle(Theme.text)
+                    Text(step == .added
+                         ? "Open a new Claude session and type /spawnsweep to open the pane."
+                         : "A pane beside your Claude chat shows what's running, with a count under the prompt. Turn it off any time in Connections.")
+                        .font(.system(size: 13)).foregroundStyle(Theme.secondary).fixedSize(horizontal: false, vertical: true)
+                }
+                Spacer(minLength: 12)
+                switch step {
+                case .offer:
+                    Button("Not now") { model.prefs.claudePaneBannerDismissed = true }.buttonStyle(.quiet)
+                    Button("Add to Claude") { add() }.buttonStyle(.primary)
+                case .adding:
+                    ProgressView().controlSize(.small)
+                    Text("Adding to Claude…").font(.system(size: 13, weight: .medium)).foregroundStyle(Theme.text)
+                case .added:
+                    Button("Done") { model.prefs.claudePaneBannerDismissed = true }.buttonStyle(.primary)
+                }
+            }
+            .padding(22)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .clay(radius: 26)
+        }
+    }
+
+    private func add() {
+        step = .adding
+        Task { step = await model.setClaudePane(true) ? .added : .offer }
     }
 }

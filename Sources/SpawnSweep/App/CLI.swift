@@ -171,6 +171,7 @@ extension CLI {
         full.historyDays = 9; full.appearance = "dark"; full.actionableAlerts = false; full.budgetWarnings = false
         full.budgetSimulators = 5; full.budgetWorktreeGB = 77; full.rules = [r]; full.onboarded = true
         full.notifyNewSessions = false; full.notifyNewSimulators = false; full.notifyNewWorktrees = false
+        full.claudePaneBannerDismissed = true
         full.snoozedUntil = ["x": Date(timeIntervalSince1970: 1000)]
         let enc = JSONEncoder(); enc.outputFormatting = .sortedKeys
         let once = try! enc.encode(full)

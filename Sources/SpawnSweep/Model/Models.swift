@@ -470,6 +470,8 @@ struct Prefs: Codable {
     var notifyNewSessions = true
     var notifyNewSimulators = true
     var notifyNewWorktrees = true
+    /// The Sessions page's offer to add the SpawnSweep pane to Claude: gone once added, or after Not now.
+    var claudePaneBannerDismissed = false
     var rules: [Rule] = [
         Rule(name: "Simulator bedtime", kind: .simulatorIdle(hours: 2)),
         Rule(name: "Finished means finished", kind: .endedLeftovers(minutes: 30)),
@@ -498,6 +500,7 @@ extension Prefs {
         notifyNewSessions = c.value(.notifyNewSessions, or: notifyNewSessions)
         notifyNewSimulators = c.value(.notifyNewSimulators, or: notifyNewSimulators)
         notifyNewWorktrees = c.value(.notifyNewWorktrees, or: notifyNewWorktrees)
+        claudePaneBannerDismissed = c.value(.claudePaneBannerDismissed, or: claudePaneBannerDismissed)
         if let saved = try? c.decodeIfPresent([Lossy<Rule>].self, forKey: .rules) { rules = saved.compactMap(\.value) }
         onboarded = c.value(.onboarded, or: onboarded)
         snoozedUntil = c.value(.snoozedUntil, or: snoozedUntil)

@@ -10,6 +10,7 @@ struct SessionsPage: View {
     var body: some View {
         PageScroll {
             PageHeader(title: "A little room to breathe.", subtitle: "Everything your agents left running. Beautifully in order.")
+            ClaudePaneBanner()
             if model.workspace.scannedAt == .distantPast {
                 skeleton
             } else {

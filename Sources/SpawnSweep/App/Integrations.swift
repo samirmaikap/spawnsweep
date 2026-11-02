@@ -123,6 +123,11 @@ enum Integrations {
     // MARK: - Claude Code pane plugin (claude-plugin/ in this repo)
 
     static let paneMarketplace = "samirmaikap/spawnsweep"
+    /// Claude Code or the Claude app is on this Mac, so offering the pane makes sense.
+    static var claudeOnThisMac: Bool {
+        let fm = FileManager.default
+        return fm.fileExists(atPath: home + "/.claude") || fm.fileExists(atPath: "/Applications/Claude.app")
+    }
     static let panePlugin = "spawnsweep@spawnsweep"
     static var paneCommands: String {
         "claude plugin marketplace add \(paneMarketplace)\nclaude plugin install \(panePlugin) --scope user"
