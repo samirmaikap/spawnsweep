@@ -1,0 +1,12 @@
+{
+  "name": "spawnsweep",
+  "owner": { "name": "Samir Maikap", "url": "https://github.com/samirmaikap" },
+  "description": "Claude Code plugins for SpawnSweep, the macOS menu bar cleaner for AI coding agents.",
+  "plugins": [
+    {
+      "name": "spawnsweep-pane",
+      "source": "./claude-plugin",
+      "description": "A SpawnSweep pane: what your AI coding agents left running on this Mac, from the SpawnSweep app."
+    }
+  ]
+}

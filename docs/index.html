@@ -65,6 +65,8 @@
           "acceptedAnswer": { "@type": "Answer", "text": "xcrun simctl delete unavailable removes simulators for runtimes you no longer have. SpawnSweep's Storage page lists simulator devices and Xcode DerivedData by size and removes unused simulator devices with a preview. SpawnSweep Pro's junk cleaner also clears DerivedData." } },
         { "@type": "Question", "name": "Which AI coding agents does SpawnSweep support?",
           "acceptedAnswer": { "@type": "Answer", "text": "Claude Code, the Claude desktop app, Codex, Cursor, Gemini and Aider. Processes are matched to the session that started them. Anything else listening on a port still shows up on the Ports board." } },
+        { "@type": "Question", "name": "Can I see what's running from inside Claude Code?",
+          "acceptedAnswer": { "@type": "Answer", "text": "Yes. The SpawnSweep pane plugin shows each agent session with its dev servers, ports and Docker stacks in a side pane next to your chat, with a summary in the status line, and refreshes every 30 seconds. It needs SpawnSweep in Applications. At the prompt of a Claude Code terminal session, run /plugin install spawnsweep-pane --marketplace samirmaikap/spawnsweep. In the Claude desktop app, click + next to the prompt box, then Plugins, Add marketplace with samirmaikap/spawnsweep, then Add plugin." } },
         { "@type": "Question", "name": "Is SpawnSweep a CleanMyMac alternative?",
           "acceptedAnswer": { "@type": "Answer", "text": "For developers, mostly. SpawnSweep cleans what general Mac cleaners don't see: agent sessions, dev servers, busy ports, git worktrees and Docker stacks. SpawnSweep Pro adds the classic cleaning: app and developer caches, logs, old installers, and large & old files. It isn't an antivirus or an app uninstaller." } },
         { "@type": "Question", "name": "Is SpawnSweep free?",
@@ -358,7 +360,7 @@ footer p { margin: 0; }
       <li><span class="tile"><svg viewBox="0 0 20 20"><path d="M15.6 12.9A7 7 0 0 1 7.1 4.4a7 7 0 1 0 8.5 8.5z"/></svg></span>
         <div><h3>Autopilot</h3><p>Rules that start as dry runs: simulator bedtime, finished-session leftovers, end of day, battery saver, low disk.</p></div></li>
       <li><span class="tile"><svg viewBox="0 0 20 20"><path d="M7.5 6.5L3.5 10l4 3.5M12.5 6.5l4 3.5-4 3.5"/></svg></span>
-        <div><h3>Connections</h3><p>A Claude Code SessionEnd hook, and an MCP server agents can ask before starting another dev server.</p></div></li>
+        <div><h3>Connections</h3><p>A Claude Code SessionEnd hook, an MCP server agents can ask before starting another dev server, and a <a href="#claude-pane">Claude Code pane</a>.</p></div></li>
       <li><span class="tile"><svg viewBox="0 0 20 20"><path d="M10 2.5l6 2.5v4.5c0 4-2.7 6.7-6 8-3.3-1.3-6-4-6-8V5l6-2.5z"/></svg></span>
         <div><h3>Safety &amp; Activity</h3><p>Public tunnels, <code>.env</code> copies (locations only), protected sessions and ports, and a log of every change with its way back.</p></div></li>
     </ul>
@@ -450,6 +452,9 @@ footer p { margin: 0; }
 
     <h3>Which AI coding agents does SpawnSweep support?</h3>
     <p>Claude Code, the Claude desktop app, Codex, Cursor, Gemini and Aider. Processes are matched to the session that started them. Anything else listening on a port still shows up on the Ports board.</p>
+
+    <h3 id="claude-pane">Can I see what's running from inside Claude Code?</h3>
+    <p>Yes. The SpawnSweep pane plugin shows each agent session with its dev servers, ports and Docker stacks in a side pane next to your chat, with a summary in the status line, and refreshes every 30 seconds. It needs SpawnSweep in Applications. At the prompt of a Claude Code terminal session, run <code>/plugin install spawnsweep-pane --marketplace samirmaikap/spawnsweep</code>. In the Claude desktop app, click <strong>+</strong> next to the prompt box, then <strong>Plugins</strong>, <strong>Add marketplace</strong> with <code>samirmaikap/spawnsweep</code>, then <strong>Add plugin</strong>.</p>
 
     <h3>Is SpawnSweep a CleanMyMac alternative?</h3>
     <p>For developers, mostly. SpawnSweep cleans what general Mac cleaners don't see: agent sessions, dev servers, busy ports, git worktrees and Docker stacks. SpawnSweep Pro adds the classic cleaning: app and developer caches, logs, old installers, and large &amp; old files. It isn't an antivirus or an app uninstaller.</p>

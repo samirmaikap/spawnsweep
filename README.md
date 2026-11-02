@@ -81,8 +81,9 @@ Building from source gives you the free edition. Junk cleaning, large & old file
 | **Storage** | Worktrees per repo with status and size. Slim them (remove rebuildable folders), push and remove, recycle merged ones |
 | **Recycle bin** | Removed worktrees with their branch, commit and saved ignored files. Restore within the retention window |
 | **Autopilot** | Rules that start as dry runs: simulator bedtime, finished-session leftovers, end of day, battery saver, low disk, merged worktrees |
-| **Connections** | Agent detection, a Claude Code SessionEnd hook, and an MCP server agents can ask before starting another dev server |
+| **Connections** | Agent detection, a Claude Code SessionEnd hook, an MCP server agents can ask before starting another dev server, and a [Claude Code pane](#claude-code-pane) |
 | **Safety & Activity** | Public tunnels, `.env` copies (locations only), protected sessions and ports, and a log of every change with its way back |
+| **Notifications** | A heads-up when an agent session starts, a simulator boots or a worktree appears, each with its own switch in Settings |
 
 The menu bar shows what's running right now, memory used, disk free, and one button to put leftovers away.
 
@@ -141,6 +142,16 @@ SpawnSweep deletes as little as possible and asks first.
 ```
 
 **Connections › Claude Code** installs the hook into `~/.claude/settings.json` (only its own entry, with a `.bak` copy). **Connections › Configure MCP** registers the MCP server with `claude mcp add`.
+
+## Claude Code pane
+
+A plugin for Claude Code and the Claude desktop app puts what SpawnSweep sees in a side pane next to your chat: each agent session with its dev servers, ports and Docker stacks, loose simulators, and a summary in the status line. It refreshes every 30 seconds and needs SpawnSweep in Applications. At the prompt of a Claude Code terminal session:
+
+```
+/plugin install spawnsweep-pane --marketplace samirmaikap/spawnsweep
+```
+
+In the desktop app, click **+** next to the prompt box, then **Plugins**, **Add marketplace** with `samirmaikap/spawnsweep`, then **Add plugin**. The plugin's source and details are in [`claude-plugin/`](claude-plugin).
 
 ## Privacy
 
