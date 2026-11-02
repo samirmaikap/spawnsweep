@@ -126,12 +126,13 @@ test('the pane lists worktrees from the JSON scan, in-use ones first', async ($,
   await ui.unmount()
 })
 
-test('the footer shows one moon with the count, and a click opens the pane', async ($, on) => {
+test('the count shows as the status line, and the terminal footer badge opens the pane', async ($, on) => {
   const clock = mock.clock(on, { now: NOW })
   const opened: string[] = []
+  const statuses: unknown[] = []
   on('command.register', () => ({ value: { command: 'spawnsweep' } }))
   on('ui.open', (_, e) => { opened.push(e.id); return { value: { isPlaced: true } } })
-  on('ui.status', () => ({ value: undefined }))
+  on('ui.status', (_, e) => { statuses.push(e); return { value: undefined } })
   on('session.start', (_, e) => ({ cwd: e.cwd }))
   on('fs.stat', () => ({ value: { kind: 'file', size: 1, mtimeMs: 0 } }))
   on('process.run', () => ({ value: { exitCode: 0, stdout: JSON_SCAN, stderr: '' } }))
@@ -139,13 +140,12 @@ test('the footer shows one moon with the count, and a click opens the pane', asy
   await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
   await clock.settle()
   expect(opened).toEqual([])
+  expect(JSON.stringify(statuses)).toContain('2 running')
 
-  for (const surface of ['terminal', 'desktop'] as const) {
-    const ui = await $.ui.mount({ plugin: 'spawnsweep-pane', surface, component: 'SessionMode', props: { modes: ['focus'] } })
-    expect((await ui.find({ type: 'Text', text: /focus/ }))?.text).toBe('focus')
-    expect((await ui.find({ key: 'spawnsweep-badge' }))?.text).toBe('☾ 2')
-    await ui.press({ key: 'spawnsweep-badge' })
-    await ui.unmount()
-  }
-  expect(opened).toEqual(['spawnsweep', 'spawnsweep'])
+  const footer = await $.ui.mount({ plugin: 'spawnsweep-pane', surface: 'terminal', component: 'SessionMode', props: { modes: ['focus'] } })
+  expect((await footer.find({ type: 'Text', text: /focus/ }))?.text).toBe('focus')
+  expect((await footer.find({ key: 'spawnsweep-badge' }))?.text).toBe('☾ 2')
+  await footer.press({ key: 'spawnsweep-badge' })
+  await footer.unmount()
+  expect(opened).toEqual(['spawnsweep'])
 })

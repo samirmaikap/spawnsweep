@@ -162,6 +162,13 @@ function worktreeOrder(a: WorktreeItem, b: WorktreeItem): number {
   return Number(b.inUse) - Number(a.inUse) || Number(!!b.agent) - Number(!!a.agent) || a.repo.localeCompare(b.repo)
 }
 
+
+function openPane($: Engine): void {
+  void $.ui.open({ id: PANE, title: 'SpawnSweep', focus: true })
+}
+
+// The terminal draws the footer badge; once it has, the status line would only repeat it.
+let hasFooterBadge = false
 let isBusy = false
 
 async function refresh($: Engine): Promise<void> {
@@ -175,6 +182,7 @@ async function refresh($: Engine): Promise<void> {
     if (ran.exitCode !== 0) throw new Error(ran.stderr.trim() || `The scan stopped with exit code ${ran.exitCode}.`)
     const next = readScan(ran.stdout, await $.clock.now())
     await update($, snapshot, () => next)
+    if (!hasFooterBadge) $.ui.status(`${next.running} running`)
   } catch (err) {
     const at = await $.clock.now()
     const error = err instanceof Error ? err.message : String(err)
@@ -184,6 +192,7 @@ async function refresh($: Engine): Promise<void> {
       isScanning: false,
       error,
     }))
+    if (!hasFooterBadge) $.ui.status('scan failed')
   } finally {
     isBusy = false
   }
@@ -193,7 +202,6 @@ export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     const started = await next(e)
     await $.command.register({ name: 'spawnsweep', description: "Show what's running on this Mac, from SpawnSweep" })
-    $.ui.status(undefined)   // the old text status line, if an earlier version left one
     void refresh($)
     $.clock.every(EVERY_MS, () => void refresh($))
     return started
@@ -209,6 +217,9 @@ export const register: Register = on => {
   // opens the pane. The engine's labels are drawn first, as they were.
   on('ui.render', { component: 'SessionMode' }, async ($, e, next) => {
     const s = await read($, snapshot)
+    // The desktop doesn't draw this footer spot for plugins; the status line stands in there.
+    if (e.surface === 'desktop') return next(e)
+    if (!hasFooterBadge) { hasFooterBadge = true; $.ui.status(undefined) }
     if (!s) return next(e)
     const { Box, Text, Button } = $.ui.resolve(e)
     const failed = s.error !== undefined
@@ -220,7 +231,7 @@ export const register: Register = on => {
           plain
           dimColor={s.running === 0 && !failed}
           label={failed ? 'SpawnSweep: scan failed' : `SpawnSweep: ${summary(s)}`}
-          onPress={() => void $.ui.open({ id: PANE, title: 'SpawnSweep', focus: true })}
+          onPress={() => openPane($)}
         >
           ☾ {failed ? '!' : String(s.running)}
         </Button>
