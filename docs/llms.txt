@@ -1,0 +1,21 @@
+# SpawnSweep
+
+> SpawnSweep is a free, open-source macOS menu bar app that cleans up after AI coding agents. It finds the dev servers, busy ports, simulators, Docker stacks and git worktrees that Claude Code, Codex, Cursor, Gemini and Aider leave running, shows which agent session started them, and cleans them up with a preview first.
+
+- Platform: macOS 14 or later on Apple silicon. Native SwiftUI.
+- Price: free and open source (MIT). SpawnSweep Pro is a one-time $9 purchase for up to 3 Macs and adds a junk cleaner, large & old files, and Autopilot rules that act on their own.
+- Privacy: runs locally. No account, no telemetry. The only network call checks a Pro license key, about once a week.
+- Install: `curl -fsSL https://raw.githubusercontent.com/samirmaikap/spawnsweep/main/scripts/install.sh | bash`, or download SpawnSweep.zip from the latest GitHub release.
+- Made by Samir Maikap.
+
+## Docs
+
+- [Website](https://samirmaikap.github.io/spawnsweep/): what SpawnSweep finds, how it compares, Pro, safety rules
+- [FAQ](https://samirmaikap.github.io/spawnsweep/#faq): freeing a port on a Mac, stopping dev servers agents left running, cleaning git worktrees and Xcode simulators
+- [README](https://github.com/samirmaikap/spawnsweep#readme): features, install, safety rules, helpers (MCP server, Claude Code SessionEnd hook)
+- [Latest release](https://github.com/samirmaikap/spawnsweep/releases/latest): download and release notes
+
+## Optional
+
+- [Source code](https://github.com/samirmaikap/spawnsweep)
+- [Get SpawnSweep Pro](https://checkout.dodopayments.com/buy/pdt_0Nqn3fOmfcDQwcQysr6t5?quantity=1)
