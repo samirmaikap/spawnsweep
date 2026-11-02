@@ -38,6 +38,11 @@
       "operatingSystem": "macOS 14 or later on Apple silicon",
       "downloadUrl": "https://github.com/samirmaikap/spawnsweep/releases/latest/download/SpawnSweep.zip",
       "image": "https://samirmaikap.github.io/spawnsweep/images/icon.png",
+      "screenshot": [
+        "https://samirmaikap.github.io/spawnsweep/images/this-mac.jpg",
+        "https://samirmaikap.github.io/spawnsweep/images/autopilot.jpg",
+        "https://samirmaikap.github.io/spawnsweep/images/pro.jpg"
+      ],
       "license": "https://opensource.org/licenses/MIT",
       "isAccessibleForFree": true,
       "offers": [
@@ -212,6 +217,8 @@ h2 { font-size: clamp(28px, 3.4vw, 36px); line-height: 1.15; letter-spacing: -.0
 .tile svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
 .features h3 { font-size: 16px; margin: 0 0 2px; font-weight: 600; }
 .features p { margin: 0; color: var(--muted); font-size: 15px; }
+.shots { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 28px; }
+.shots img { display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); }
 .pro-mark { font-size: 12px; font-weight: 600; color: var(--accent-text); margin-left: 6px; }
 
 .video { width: 100%; height: auto; aspect-ratio: 16 / 9; background: var(--tint); border-radius: 12px; border: 1px solid var(--line); }
@@ -253,6 +260,7 @@ footer p { margin: 0; }
   .hero-grid { gap: 40px; }
   .features { grid-template-columns: 1fr; padding: 4px 18px; }
   .features li:nth-child(2) { border-top: 1px solid var(--line); }
+  .shots { grid-template-columns: 1fr; }
   .popover { margin-inline: auto; }
   .pro { padding: 24px; gap: 24px; }
   .top nav a:not(.gh) { display: none; }
@@ -354,7 +362,10 @@ footer p { margin: 0; }
       <li><span class="tile"><svg viewBox="0 0 20 20"><path d="M10 2.5l6 2.5v4.5c0 4-2.7 6.7-6 8-3.3-1.3-6-4-6-8V5l6-2.5z"/></svg></span>
         <div><h3>Safety &amp; Activity</h3><p>Public tunnels, <code>.env</code> copies (locations only), protected sessions and ports, and a log of every change with its way back.</p></div></li>
     </ul>
-
+    <div class="shots">
+      <img src="images/this-mac.jpg" width="1003" height="731" loading="lazy" alt="SpawnSweep This Mac page: disk space, memory, junk files and large files on macOS">
+      <img src="images/autopilot.jpg" width="1003" height="731" loading="lazy" alt="SpawnSweep Autopilot: dry-run cleanup rules for idle simulators, finished agent sessions, end of day, battery saver and quiet git worktrees">
+    </div>
   </div>
 </section>
 

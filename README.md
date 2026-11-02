@@ -30,7 +30,7 @@ Native SwiftUI for macOS 14 or later on Apple silicon. Free and open source (MIT
 
 <p align="center">
   <img src="docs/images/this-mac.jpg" width="49%" alt="SpawnSweep This Mac page: disk space, memory, junk files and large files on macOS">
-  <img src="docs/images/autopilot.jpg" width="49%" alt="SpawnSweep Autopilot: cleanup rules for simulators, finished agent sessions, low disk space and merged git worktrees">
+  <img src="docs/images/autopilot.jpg" width="49%" alt="SpawnSweep Autopilot: dry-run cleanup rules for idle simulators, finished agent sessions, end of day, battery saver and quiet git worktrees">
 </p>
 
 ## Install
