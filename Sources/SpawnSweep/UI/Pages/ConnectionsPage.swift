@@ -56,7 +56,7 @@ struct ConnectionsPage: View {
                 HStack(alignment: .top, spacing: 20) {
                     IconTile(symbol: "moon", size: 56)
                     VStack(alignment: .leading, spacing: 12) {
-                        Text("See what's running in a pane beside your Claude chat, with a running count under the prompt. Type /spawnsweep in Claude to open it.")
+                        Text("See what's running in a pane beside your Claude chat. A 🌔 with the count sits in Claude's footer; click it, or type /spawnsweep, to open the pane.")
                             .font(.system(size: 13)).foregroundStyle(Theme.secondary)
                             .fixedSize(horizontal: false, vertical: true)
                         HStack(spacing: 10) {
@@ -342,7 +342,7 @@ struct ClaudePaneBanner: View {
                         .font(.system(size: 17, weight: .semibold)).foregroundStyle(Theme.text)
                     Text(step == .added
                          ? "Open a new Claude session and type /spawnsweep to open the pane."
-                         : "A pane beside your Claude chat shows what's running, with a count under the prompt. Turn it off any time in Connections.")
+                         : "A pane beside your Claude chat shows what's running, and a 🌔 with the count in Claude's footer opens it. Turn it off any time in Connections.")
                         .font(.system(size: 13)).foregroundStyle(Theme.secondary).fixedSize(horizontal: false, vertical: true)
                 }
                 Spacer(minLength: 12)
