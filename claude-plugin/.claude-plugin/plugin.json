@@ -1,6 +1,6 @@
 {
   "name": "spawnsweep",
-  "version": "0.1.0",
+  "version": "0.1.1",
   "description": "A SpawnSweep pane: what your AI coding agents left running on this Mac, from the SpawnSweep app.",
   "types": "./types/index.d.ts",
   "author": {

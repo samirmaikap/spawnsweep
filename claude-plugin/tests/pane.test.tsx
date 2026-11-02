@@ -126,7 +126,7 @@ test('the pane lists worktrees from the JSON scan, in-use ones first', async ($,
   await ui.unmount()
 })
 
-test('the count shows as the status line, and the terminal footer badge opens the pane', async ($, on) => {
+test('the pane opens with the session, the count is the status line, and the terminal footer badge opens the pane', async ($, on) => {
   const clock = mock.clock(on, { now: NOW })
   const opened: string[] = []
   const statuses: unknown[] = []
@@ -139,7 +139,7 @@ test('the count shows as the status line, and the terminal footer badge opens th
 
   await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
   await clock.settle()
-  expect(opened).toEqual([])
+  expect(opened).toEqual(['spawnsweep'])   // opened with the session
   expect(JSON.stringify(statuses)).toContain('2 running')
 
   const footer = await $.ui.mount({ plugin: 'spawnsweep', surface: 'terminal', component: 'SessionMode', props: { modes: ['focus'] } })
@@ -147,5 +147,5 @@ test('the count shows as the status line, and the terminal footer badge opens th
   expect((await footer.find({ key: 'spawnsweep-badge' }))?.text).toBe('☾ 2')
   await footer.press({ key: 'spawnsweep-badge' })
   await footer.unmount()
-  expect(opened).toEqual(['spawnsweep'])
+  expect(opened).toEqual(['spawnsweep', 'spawnsweep'])
 })

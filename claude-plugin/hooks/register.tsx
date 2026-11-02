@@ -202,6 +202,8 @@ export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     const started = await next(e)
     await $.command.register({ name: 'spawnsweep', description: "Show what's running on this Mac, from SpawnSweep" })
+    // The pane opens with every session, as a tab of the side panel, so it's always a click away there.
+    void $.ui.open({ id: PANE, title: 'SpawnSweep' })
     void refresh($)
     $.clock.every(EVERY_MS, () => void refresh($))
     return started
