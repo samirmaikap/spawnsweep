@@ -6,7 +6,7 @@
 
 A side pane in Claude Code and the Claude desktop app that shows what your AI coding agents left running on this Mac: each agent session with its dev servers, ports and Docker stacks, simulators and other things no session claims, and, with newer SpawnSweep releases, your git worktrees.
 
-The pane opens beside your chat when a Claude session starts, and `/spawnsweep` brings it back if you close it. A running count sits under the prompt (`4 running`); in a terminal session it's a moon with the count (`☾ 4`) you can click. The pane reads what the [SpawnSweep](https://samirmaikap.github.io/spawnsweep/) Mac app reports. It refreshes every 30 seconds, and has a **Refresh** button and an **Open SpawnSweep** button for when you want to clean something up.
+The pane opens beside your chat when a Claude session starts, and `/spawnsweep` brings it back if you close it. A moon with the count of what's running (`🌔 4`) sits in the footer, beside the model name; click it to open the pane. The pane reads what the [SpawnSweep](https://samirmaikap.github.io/spawnsweep/) Mac app reports. It refreshes every 30 seconds, and has a **Refresh** button and an **Open SpawnSweep** button for when you want to clean something up.
 
 ## Requirements
 

@@ -215,28 +215,21 @@ export const register: Register = on => {
     return { text: 'SpawnSweep pane opened.' }
   })
 
-  // One control in the footer, beside the session's mode labels: the moon and how many things are running. A click
-  // opens the pane. The engine's labels are drawn first, as they were.
-  on('ui.render', { component: 'SessionMode' }, async ($, e, next) => {
+  // One control in the footer, beside the session's mode labels: 🌔 and how many things are running; a click
+  // opens the pane. A Button is what the desktop footer draws and lets you click (an image or a link there doesn't
+  // show or doesn't click). The engine's labels are drawn first, as they were.
+  on('ui.render', { component: 'SessionMode' }, async ($, e) => {
     const s = await read($, snapshot)
-    // The desktop doesn't draw this footer spot for plugins; the status line stands in there.
-    if (e.surface === 'desktop') return next(e)
     if (!hasFooterBadge) { hasFooterBadge = true; $.ui.status(undefined) }
-    if (!s) return next(e)
+    const failed = s?.error !== undefined
+    const count = !s ? '…' : failed ? '!' : String(s.running)
     const { Box, Text, Button } = $.ui.resolve(e)
-    const failed = s.error !== undefined
     return (
       <Box flexDirection="row" gap={1} alignItems="center">
         {e.props.modes.length > 0 ? <Text dimColor>{e.props.modes.join(' & ')}</Text> : null}
-        <Button
-          key="spawnsweep-badge"
-          plain
-          dimColor={s.running === 0 && !failed}
-          label={failed ? 'SpawnSweep: scan failed' : `SpawnSweep: ${summary(s)}`}
-          onPress={() => openPane($)}
-        >
-          ☾ {failed ? '!' : String(s.running)}
-        </Button>
+        {/* No `label`: the desktop draws a Button's label in place of its children, so the moon and count would vanish. */}
+        {/* The footer draws text, not images: the moon emoji stands in for the logo. */}
+        <Button key="spawnsweep-badge" plain onPress={() => openPane($)}>🌔 {count}</Button>
       </Box>
     )
   })

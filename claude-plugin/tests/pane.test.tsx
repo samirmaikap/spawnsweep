@@ -126,7 +126,7 @@ test('the pane lists worktrees from the JSON scan, in-use ones first', async ($,
   await ui.unmount()
 })
 
-test('the pane opens with the session, the count is the status line, and the terminal footer badge opens the pane', async ($, on) => {
+test('the pane opens with the session, and the footer moon opens it on the terminal and the desktop', async ($, on) => {
   const clock = mock.clock(on, { now: NOW })
   const opened: string[] = []
   const statuses: unknown[] = []
@@ -144,8 +144,14 @@ test('the pane opens with the session, the count is the status line, and the ter
 
   const footer = await $.ui.mount({ plugin: 'spawnsweep', surface: 'terminal', component: 'SessionMode', props: { modes: ['focus'] } })
   expect((await footer.find({ type: 'Text', text: /focus/ }))?.text).toBe('focus')
-  expect((await footer.find({ key: 'spawnsweep-badge' }))?.text).toBe('☾ 2')
+  expect((await footer.find({ key: 'spawnsweep-badge' }))?.text).toBe('🌔 2')
   await footer.press({ key: 'spawnsweep-badge' })
   await footer.unmount()
-  expect(opened).toEqual(['spawnsweep', 'spawnsweep'])
+
+  // The desktop: the same button, the one control its footer draws and clicks.
+  const desk = await $.ui.mount({ plugin: 'spawnsweep', surface: 'desktop', component: 'SessionMode', props: { modes: [] } })
+  expect((await desk.find({ key: 'spawnsweep-badge' }))?.text).toBe('🌔 2')
+  await desk.press({ key: 'spawnsweep-badge' })
+  await desk.unmount()
+  expect(opened).toEqual(['spawnsweep', 'spawnsweep', 'spawnsweep'])
 })
