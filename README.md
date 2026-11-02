@@ -26,7 +26,7 @@
 
 SpawnSweep is a free, open-source Mac app that cleans up after AI coding agents. Claude Code, Codex, Cursor and friends start dev servers, watchers, headless browsers, simulators, Docker stacks and git worktrees. When the session ends, a lot of it keeps running, holding ports and memory and taking disk space. SpawnSweep finds it, tells you which agent started it, and cleans up with a preview first, every time.
 
-Native SwiftUI, macOS 14+. Everything stays on your Mac. No account, no telemetry.
+Native SwiftUI for macOS 14 or later on Apple silicon. Free and open source (MIT); SpawnSweep Pro is a one-time $9 for up to 3 Macs. Everything stays on your Mac. No account, no telemetry.
 
 <p align="center">
   <img src="docs/images/this-mac.jpg" width="49%" alt="SpawnSweep This Mac page: disk space, memory, junk files and large files on macOS">
@@ -86,6 +86,18 @@ Building from source gives you the free edition. Junk cleaning, large & old file
 
 The menu bar shows what's running right now, memory used, disk free, and one button to put leftovers away.
 
+## How it compares
+
+| | By hand in Terminal | General Mac cleaners | SpawnSweep |
+|---|---|---|---|
+| **Leftover dev servers, watchers, headless browsers** | Find each one with `ps` or `lsof`, then `kill` it | Not their focus | Grouped by the agent session that started them, stopped gently after a preview |
+| **Busy ports** | `lsof -i :3000`, one port at a time | Not their focus | Every listener with its project, branch and session; free one in a click |
+| **Which agent started what** | Can't tell | Can't tell | Every session: Claude Code, Codex, Cursor, Gemini, Aider |
+| **Git worktrees** | `git worktree list` and `remove`; ignored files like `.env` go with it | Not their focus | Size and status per repo; slim or recycle, and restore later |
+| **Simulators and Xcode build data** | `xcrun simctl`, delete DerivedData folders | Some clear DerivedData | Sizes listed, unused simulators removed; DerivedData with Pro |
+| **App caches, logs, large files** | `du` and manual deletion | Their core feature | With Pro |
+| **Cleans up on its own** | Your own scripts | Scheduled scans | Autopilot rules that start as dry runs; acting on their own with Pro |
+
 ## SpawnSweep Pro
 
 Everything above is free unless it says Pro. Pro adds the parts that clean your whole Mac and work on their own:
@@ -95,7 +107,7 @@ Everything above is free unless it says Pro. Pro adds the parts that clean your 
 - **Autopilot that acts**: rules that ask first with a notification, or act on their own and log a way back.
 - **Rules that run themselves**: clean up at the end of the day, battery saver when unplugged, room to breathe when the disk runs low.
 
-The official download scans for free, so you can see what Pro would clean before you decide. Pro is a one-time purchase through [Dodo Payments](https://dodopayments.com); the key arrives by email and you paste it into **Settings › SpawnSweep Pro** in the official download. Source builds don't include Pro, so a key does nothing there.
+The official download scans for free, so you can see what Pro would clean before you decide. Pro is a one-time $9 purchase through [Dodo Payments](https://dodopayments.com); the key arrives by email and you paste it into **Settings › SpawnSweep Pro** in the official download. Source builds don't include Pro, so a key does nothing there.
 
 A key works on up to 3 Macs and keeps working offline for weeks between checks.
 
@@ -162,7 +174,7 @@ For developers, mostly. SpawnSweep cleans what general Mac cleaners don't see: a
 
 ### Is SpawnSweep free?
 
-Yes. The app and its source code are free under the MIT license. SpawnSweep Pro, a one-time purchase, unlocks the junk cleaner, large & old files, and Autopilot rules that act on their own.
+Yes. The app and its source code are free under the MIT license. SpawnSweep Pro, a one-time $9 purchase for up to 3 Macs, unlocks the junk cleaner, large & old files, and Autopilot rules that act on their own.
 
 ## Project layout
 
