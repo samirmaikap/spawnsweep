@@ -135,6 +135,10 @@ final class AppModel {
     /// When each session was first seen ended. Rules count "after the session ends" from here, not from the
     /// folder's last change, so quitting an agent after a quiet hour doesn't stop its leftovers right away.
     var endedSeen: [String: Date] = [:]
+    /// What's already been seen, for start notifications.
+    var sessionArrivals = Arrivals()
+    var deviceArrivals = Arrivals()
+    var worktreeArrivals = Arrivals()
 
     var prefs: Prefs {
         get { state.prefs }
@@ -192,8 +196,10 @@ final class AppModel {
         scanning = true
         let startedAt = Date()
         let prefs = prefs, marks = state.marks
+        let knownRepos = Set(disk.repos.map(\.path))   // includes repos the disk scan found through agent worktree folders
         Task.detached {
             let result = Scanner.scan(prefs: prefs, marks: marks, withStats: withStats)
+            let worktrees = prefs.notifyNewWorktrees ? DiskScanner.linkedWorktrees(repos: DiskScanner.findRepos(prefs).union(knownRepos)) : []
             await MainActor.run {
                 self.workspace = self.annotate(result.workspace, scanStartedAt: startedAt)
                 self.state.marks = result.marks
@@ -202,6 +208,7 @@ final class AppModel {
                 self.reloadFiles()
                 self.runAutopilot()
                 self.checkBudgetsAndAlerts()
+                self.noticeStarts(worktrees: worktrees)
                 if self.rescanQueued { self.rescanQueued = false; self.refresh() }
             }
         }

@@ -21,15 +21,14 @@ enum Entry {
 }
 
 struct SpawnSweepApp: App {
-    @State private var model = AppModel()
     @NSApplicationDelegateAdaptor(AppDelegate.self) private var delegate
+    private var model: AppModel { delegate.model }
 
     var body: some Scene {
         Window("SpawnSweep", id: "main") {
             RootView()
                 .environment(model)
                 .onAppear {
-                    delegate.model = model
                     model.start()
                     applyAppearance(model.prefs.appearance)
                     if !model.prefs.onboarded { model.go(.welcome) }
@@ -65,12 +64,15 @@ func applyAppearance(_ value: String) {
     }
 }
 
+@MainActor
 final class AppDelegate: NSObject, NSApplicationDelegate {
-    var model: AppModel?
+    /// Owned here so scanning, Autopilot and notifications start at launch, not when the window or menu first opens.
+    let model = AppModel()
     private var hotKey: EventHotKeyRef?
 
     func applicationDidFinishLaunching(_ notification: Notification) {
         registerHotKey()
+        model.start()
     }
 
     func applicationShouldTerminateAfterLastWindowClosed(_ sender: NSApplication) -> Bool { false }
@@ -80,7 +82,7 @@ final class AppDelegate: NSObject, NSApplicationDelegate {
         var spec = EventTypeSpec(eventClass: OSType(kEventClassKeyboard), eventKind: UInt32(kEventHotKeyPressed))
         InstallEventHandler(GetApplicationEventTarget(), { _, _, _ in
             DispatchQueue.main.async {
-                guard let d = NSApp.delegate as? AppDelegate, let model = d.model else { return }
+                guard let model = (NSApp.delegate as? AppDelegate)?.model else { return }
                 MainActor.assumeIsolated {
                     model.openMainWindow()
                     model.paletteOpen = true
@@ -105,7 +107,7 @@ enum LoginItem {
 
 // MARK: - Notifications
 
-/// Actionable alerts: Review opens the end-of-day sweep; Keep snoozes for a day.
+/// Actionable alerts: Review opens the end-of-day sweep; Keep snoozes for a day. Start notifications open what started.
 @MainActor
 final class Notifier: NSObject, UNUserNotificationCenterDelegate {
     static let shared = Notifier()
@@ -129,24 +131,40 @@ final class Notifier: NSObject, UNUserNotificationCenterDelegate {
         }
     }
 
-    /// `rule` routes Review to that rule's Run now preview instead of the end-of-day sweep.
-    func post(id: String, title: String, body: String, actionable: Bool, rule: UUID? = nil) {
+    /// `rule` routes Review to that rule's Run now preview instead of the end-of-day sweep; `open` is a start
+    /// notification's target for `AppModel.openStart`.
+    func post(id: String, title: String, body: String, actionable: Bool, rule: UUID? = nil, open: String? = nil) {
         guard available else { return }
         let c = UNMutableNotificationContent()
         c.title = title
         c.body = body
         if let rule { c.userInfo = ["rule": rule.uuidString] }
+        if let open { c.userInfo = ["open": open] }
         if actionable { c.categoryIdentifier = "LEFTOVERS" }
-        UNUserNotificationCenter.current().add(UNNotificationRequest(identifier: id, content: c, trigger: nil))
+        let request = UNNotificationRequest(identifier: id, content: c, trigger: nil)
+        // Asks only while nobody has decided (Welcome's Enable is easy to skip); after that it answers right away.
+        // Without permission macOS drops every notification without a word.
+        UNUserNotificationCenter.current().requestAuthorization(options: [.alert, .sound]) { ok, _ in
+            if ok { UNUserNotificationCenter.current().add(request) }
+        }
+    }
+
+    /// True when macOS has SpawnSweep's notifications turned off, so every one of them is dropped without a word.
+    func notificationsOff() async -> Bool {
+        guard available else { return false }
+        return await UNUserNotificationCenter.current().notificationSettings().authorizationStatus == .denied
     }
 
     nonisolated func userNotificationCenter(_ center: UNUserNotificationCenter, didReceive response: UNNotificationResponse,
                                             withCompletionHandler done: @escaping () -> Void) {
         let action = response.actionIdentifier
         let ruleID = (response.notification.request.content.userInfo["rule"] as? String).flatMap(UUID.init(uuidString:))
+        let open = response.notification.request.content.userInfo["open"] as? String
         Task { @MainActor in
             guard let model = self.model else { done(); return }
-            if let ruleID {
+            if let open {
+                model.openStart(open)
+            } else if let ruleID {
                 if action == "KEEP" {
                     model.prefs.snoozedUntil["rule:\(ruleID)"] = Date().addingTimeInterval(86400)
                 } else if let rule = model.prefs.rules.first(where: { $0.id == ruleID }) {

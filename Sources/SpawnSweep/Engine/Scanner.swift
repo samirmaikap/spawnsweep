@@ -212,8 +212,9 @@ enum Scanner {
         let tunnels = (sessions.flatMap(\.resources) + unattached).filter { $0.kind == .tunnel }
             .compactMap { r in r.rootPid.map { Tunnel(pid: $0, tool: r.title, targetPort: r.tunnelTarget, resource: r) } }
 
-        let ws = Workspace(sessions: sessions, unattached: unattached, devices: devices, stacks: stacks,
-                           tunnels: tunnels, scannedAt: Date())
+        let ws = Workspace(sessions: sessions, unattached: unattached, devices: devices, stacks: stacks, tunnels: tunnels,
+                           agentFolders: Dictionary(agentFolder.values.map { ($0.folder, $0.agent) }, uniquingKeysWith: { a, _ in a }),
+                           scannedAt: Date())
         return Result(workspace: ws, marks: marks)
     }
 

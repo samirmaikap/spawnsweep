@@ -170,6 +170,7 @@ extension CLI {
         full.devFolders = ["/a"]; full.pinnedFolders = ["/b"]; full.protectedPorts = [3000]; full.retentionDays = 3
         full.historyDays = 9; full.appearance = "dark"; full.actionableAlerts = false; full.budgetWarnings = false
         full.budgetSimulators = 5; full.budgetWorktreeGB = 77; full.rules = [r]; full.onboarded = true
+        full.notifyNewSessions = false; full.notifyNewSimulators = false; full.notifyNewWorktrees = false
         full.snoozedUntil = ["x": Date(timeIntervalSince1970: 1000)]
         let enc = JSONEncoder(); enc.outputFormatting = .sortedKeys
         let once = try! enc.encode(full)
@@ -326,6 +327,21 @@ extension CLI {
         // A key copied from an email or web page often ends in line breaks; a one-line field would show only the empty last line.
         assert(License.cleanKey("ABCD-1234-EF\n\n") == "ABCD-1234-EF", "line breaks kept in a pasted key")
         assert(License.cleanKey(" ab cd\t\r\n") == "abcd")
+
+        // Start notifications: the first scan is quiet, a newcomer waits out the settle time, and a key that goes away
+        // is announced again when it comes back. Something seen in only one scan never is.
+        var seen = Arrivals()
+        let t0 = Date(timeIntervalSince1970: 1_000_000)
+        func at(_ s: Double) -> Date { t0.addingTimeInterval(s) }
+        assert(seen.update(["a", "b"], at: at(0)).isEmpty, "the first scan announced what was already running")
+        assert(seen.update(["a", "b", "c"], at: at(8)).isEmpty, "announced before the settle time")
+        assert(seen.update(["a", "b", "c"], at: at(10)).isEmpty, "a rescan inside the settle time announced")
+        assert(seen.update(["a", "b", "c"], at: at(16)) == ["c"], "a settled newcomer wasn't announced")
+        assert(seen.update(["a", "b", "c"], at: at(24)).isEmpty, "announced twice")
+        assert(seen.update(["a", "b", "x"], at: at(32)).isEmpty && seen.update(["a", "b"], at: at(40)).isEmpty,
+               "something seen in one scan only was announced")
+        _ = seen.update(["a", "b", "c"], at: at(48))
+        assert(seen.update(["a", "b", "c"], at: at(56)) == ["c"], "a restart wasn't announced")
 
         Edition.pro?.selfTest()
         DiskScanner.selfTestWorktrees()

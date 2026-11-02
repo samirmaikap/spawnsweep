@@ -6,6 +6,7 @@ struct SettingsPage: View {
     @Environment(AppModel.self) private var model
     @State private var loginOn = LoginItem.isOn
     @State private var loginRefused = false
+    @State private var notificationsOff = false
 
     var body: some View {
         @Bindable var model = model
@@ -109,12 +110,29 @@ struct SettingsPage: View {
             }
 
             Panel(title: "Notifications") {
+                if notificationsOff {
+                    HStack(spacing: 12) {
+                        WarningBanner(text: "Notifications are turned off for SpawnSweep in System Settings, so none of these arrive.")
+                        Button("Open System Settings") {
+                            NSWorkspace.shared.open(URL(string: "x-apple.systempreferences:com.apple.Notifications-Settings.extension?id=app.spawnsweep.mac")!)
+                        }.buttonStyle(.quiet)
+                    }
+                }
                 TileGrid {
                     Tile(symbol: "bell.badge", title: "Actionable alerts", subtitle: "Get a Review or Keep choice when a finished session leaves things running.") {
                         Switch(label: "Actionable alerts", isOn: $model.prefs.actionableAlerts)
                     }
                     Tile(symbol: "gauge.with.dots.needle.67percent", title: "Budget warnings", subtitle: "Know when simulators or worktree storage exceed a budget.") {
                         Switch(label: "Budget warnings", isOn: $model.prefs.budgetWarnings)
+                    }
+                    Tile(symbol: "square.stack.3d.up", title: "New sessions", subtitle: "Know when Claude Code, Codex, Cursor or another agent starts in a folder.") {
+                        Switch(label: "New sessions", isOn: $model.prefs.notifyNewSessions)
+                    }
+                    Tile(symbol: "iphone", title: "New simulators", subtitle: "Know when a simulator or Android emulator boots.") {
+                        Switch(label: "New simulators", isOn: $model.prefs.notifyNewSimulators)
+                    }
+                    Tile(symbol: "arrow.triangle.branch", title: "New worktrees", subtitle: "Know when a git worktree appears in one of your repos.") {
+                        Switch(label: "New worktrees", isOn: $model.prefs.notifyNewWorktrees)
                     }
                 }
             }
@@ -130,6 +148,11 @@ struct SettingsPage: View {
             .foregroundStyle(Theme.secondary)
         }
         .onAppear { loginOn = LoginItem.isOn }
+        // Checked again on return from System Settings.
+        .task { notificationsOff = await Notifier.shared.notificationsOff() }
+        .onReceive(NotificationCenter.default.publisher(for: NSApplication.didBecomeActiveNotification)) { _ in
+            Task { notificationsOff = await Notifier.shared.notificationsOff() }
+        }
     }
 }
 

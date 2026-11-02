@@ -144,6 +144,8 @@ struct Workspace {
     var devices: [Device] = []
     var stacks: [Stack] = []
     var tunnels: [Tunnel] = []
+    /// Every folder with a live agent process, even one that hasn't started anything (`sessions` leaves those out).
+    var agentFolders: [String: Agent] = [:]
     var scannedAt: Date = .distantPast
 
     /// Everything running that SpawnSweep tracks (booted simulators and Docker stacks are resources too).
@@ -465,6 +467,9 @@ struct Prefs: Codable {
     var budgetWarnings = true
     var budgetSimulators = 2
     var budgetWorktreeGB = 30
+    var notifyNewSessions = true
+    var notifyNewSimulators = true
+    var notifyNewWorktrees = true
     var rules: [Rule] = [
         Rule(name: "Simulator bedtime", kind: .simulatorIdle(hours: 2)),
         Rule(name: "Finished means finished", kind: .endedLeftovers(minutes: 30)),
@@ -490,6 +495,9 @@ extension Prefs {
         budgetWarnings = c.value(.budgetWarnings, or: budgetWarnings)
         budgetSimulators = c.value(.budgetSimulators, or: budgetSimulators)
         budgetWorktreeGB = c.value(.budgetWorktreeGB, or: budgetWorktreeGB)
+        notifyNewSessions = c.value(.notifyNewSessions, or: notifyNewSessions)
+        notifyNewSimulators = c.value(.notifyNewSimulators, or: notifyNewSimulators)
+        notifyNewWorktrees = c.value(.notifyNewWorktrees, or: notifyNewWorktrees)
         if let saved = try? c.decodeIfPresent([Lossy<Rule>].self, forKey: .rules) { rules = saved.compactMap(\.value) }
         onboarded = c.value(.onboarded, or: onboarded)
         snoozedUntil = c.value(.snoozedUntil, or: snoozedUntil)

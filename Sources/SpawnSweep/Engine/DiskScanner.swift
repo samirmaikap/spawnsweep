@@ -29,19 +29,7 @@ enum DiskScanner {
         snap.inProgress = true
 
         // 1. Find repos and their worktrees (fast).
-        let devFolders = prefs.devFolders.isEmpty ? defaultDevFolders() : prefs.devFolders
-        var repoPaths = Set<String>()
-        for folder in devFolders {
-            if isRepo(folder) { repoPaths.insert(folder) }
-            // Repos directly inside, or one level deeper (e.g. ~/Sites/client/repo).
-            for child in (try? FileManager.default.contentsOfDirectory(atPath: folder)) ?? [] where !child.hasPrefix(".") {
-                let p = folder + "/" + child
-                if isRepo(p) { repoPaths.insert(p); continue }
-                for grand in (try? FileManager.default.contentsOfDirectory(atPath: p)) ?? [] where !grand.hasPrefix(".") && grand != "node_modules" {
-                    if isRepo(p + "/" + grand) { repoPaths.insert(p + "/" + grand) }
-                }
-            }
-        }
+        var repoPaths = findRepos(prefs)
         for agentDir in [home + "/.codex/worktrees", home + "/.cursor/worktrees"] {
             for wt in subfolders(agentDir, depth: 2) {
                 let common = Shell.run("git", ["-C", wt, "rev-parse", "--path-format=absolute", "--git-common-dir"], timeout: 5).out
@@ -121,6 +109,49 @@ enum DiskScanner {
     }
 
     // MARK: - Git
+
+    /// Repos in the dev folders: the folder itself, directly inside, or one level deeper (e.g. ~/Sites/client/repo).
+    /// Only reads directories, so the fast scan can call it too.
+    static func findRepos(_ prefs: Prefs) -> Set<String> {
+        let devFolders = prefs.devFolders.isEmpty ? defaultDevFolders() : prefs.devFolders
+        var repoPaths = Set<String>()
+        for folder in devFolders {
+            if isRepo(folder) { repoPaths.insert(folder) }
+            for child in (try? FileManager.default.contentsOfDirectory(atPath: folder)) ?? [] where !child.hasPrefix(".") {
+                let p = folder + "/" + child
+                if isRepo(p) { repoPaths.insert(p); continue }
+                for grand in (try? FileManager.default.contentsOfDirectory(atPath: p)) ?? [] where !grand.hasPrefix(".") && grand != "node_modules" {
+                    if isRepo(p + "/" + grand) { repoPaths.insert(p + "/" + grand) }
+                }
+            }
+        }
+        return repoPaths
+    }
+
+    /// Each repo's linked worktrees, read straight from `.git/worktrees` so no git process runs: cheap enough for
+    /// every fast scan, where `worktrees(of:)` waits for the disk scan. Only path, branch and head are filled in.
+    static func linkedWorktrees(repos: Set<String>) -> [Worktree] {
+        let fm = FileManager.default
+        func read(_ path: String) -> String? {
+            (try? String(contentsOfFile: path, encoding: .utf8))?.trimmingCharacters(in: .whitespacesAndNewlines)
+        }
+        var out: [Worktree] = []
+        for repo in repos {
+            let admin = repo + "/.git/worktrees"
+            for id in (try? fm.contentsOfDirectory(atPath: admin)) ?? [] {
+                let dir = admin + "/" + id
+                // `gitdir` names the worktree's .git file; newer git can write it relative to this folder.
+                guard let gitdir = read(dir + "/gitdir") else { continue }
+                let file = gitdir.hasPrefix("/") ? gitdir : URL(fileURLWithPath: dir + "/" + gitdir).standardizedFileURL.path
+                let path = (file as NSString).deletingLastPathComponent
+                guard fm.fileExists(atPath: path) else { continue }   // folder deleted, git just hasn't pruned it
+                let head = read(dir + "/HEAD") ?? ""
+                out.append(Worktree(path: path, repoPath: repo, repoName: (repo as NSString).lastPathComponent,
+                                    branch: head.hasPrefix("ref: refs/heads/") ? String(head.dropFirst(16)) : nil, head: head))
+            }
+        }
+        return out
+    }
 
     static func isRepo(_ path: String) -> Bool {
         var dir: ObjCBool = false
@@ -323,6 +354,11 @@ enum DiskScanner {
         git(repo, "commit", "-qm", "init")
         git(repo, "worktree", "add", "-q", "-b", "feature", "--", wt)
         for f in ["node_modules/x", "data/target/y", "db/dev.sqlite3", "config/master.key", "apps/api/config/.env"] { write(f, in: wt) }
+
+        // The fast scan reads the same worktree from .git/worktrees, without running git.
+        let linked = linkedWorktrees(repos: [repo])
+        assert(linked.count == 1 && samePath(linked[0].path, wt) && linked[0].branch == "feature", "linked worktrees: \(linked)")
+        assert(linked.map(\.path) == worktrees(of: repo).map(\.path), "fast and git worktree lists disagree")
 
         // Slim: node_modules is ignored by its own pattern; data/target only because data/ is.
         let slim = slimCandidates(wt).map { String($0.dropFirst(wt.count + 1)) }
