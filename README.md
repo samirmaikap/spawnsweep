@@ -136,6 +136,7 @@ SpawnSweep deletes as little as possible and asks first.
 
 ```bash
 "build/SpawnSweep.app/Contents/MacOS/SpawnSweep" --scan          # print what it sees
+"build/SpawnSweep.app/Contents/MacOS/SpawnSweep" --scan --json   # the same as JSON: sessions, what runs, simulators, worktrees
 "build/SpawnSweep.app/Contents/MacOS/SpawnSweep" --mcp           # MCP server (stdio) for agents
 "build/SpawnSweep.app/Contents/MacOS/SpawnSweep" --session-end   # Claude Code SessionEnd hook (reads JSON on stdin)
 "build/SpawnSweep.app/Contents/MacOS/SpawnSweep" --selftest      # run the safety checks

@@ -345,6 +345,7 @@ extension CLI {
 
         Edition.pro?.selfTest()
         DiskScanner.selfTestWorktrees()
+        selfTestScanJSON()
         print("selftest OK")
     }
 }

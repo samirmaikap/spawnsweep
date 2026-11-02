@@ -11,7 +11,7 @@ enum Entry {
         let args = CommandLine.arguments
         if args.contains("--session-end") { CLI.sessionEnd(); return }
         if args.contains("--mcp") { CLI.mcp(); return }
-        if args.contains("--scan") { CLI.printScan(); return }
+        if args.contains("--scan") { args.contains("--json") ? CLI.printScanJSON() : CLI.printScan(); return }
         if args.contains("--selftest") { CLI.selfTest(); return }
         if args.contains("--lens") { CLI.printLens(); return }
         if args.contains("--edition") { print(Edition.hasPro ? "pro" : "free"); return }
