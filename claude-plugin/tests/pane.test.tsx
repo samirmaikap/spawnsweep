@@ -125,3 +125,27 @@ test('the pane lists worktrees from the JSON scan, in-use ones first', async ($,
   expect((await ui.find({ type: 'Text', text: /^chat-api/ }))?.text).toBe('chat-api  billing, in use')
   await ui.unmount()
 })
+
+test('the footer shows one moon with the count, and a click opens the pane', async ($, on) => {
+  const clock = mock.clock(on, { now: NOW })
+  const opened: string[] = []
+  on('command.register', () => ({ value: { command: 'spawnsweep' } }))
+  on('ui.open', (_, e) => { opened.push(e.id); return { value: { isPlaced: true } } })
+  on('ui.status', () => ({ value: undefined }))
+  on('session.start', (_, e) => ({ cwd: e.cwd }))
+  on('fs.stat', () => ({ value: { kind: 'file', size: 1, mtimeMs: 0 } }))
+  on('process.run', () => ({ value: { exitCode: 0, stdout: JSON_SCAN, stderr: '' } }))
+
+  await $.session.start({ cwd: '/', surface: 'desktop', isInteractive: true })
+  await clock.settle()
+  expect(opened).toEqual([])
+
+  for (const surface of ['terminal', 'desktop'] as const) {
+    const ui = await $.ui.mount({ plugin: 'spawnsweep-pane', surface, component: 'SessionMode', props: { modes: ['focus'] } })
+    expect((await ui.find({ type: 'Text', text: /focus/ }))?.text).toBe('focus')
+    expect((await ui.find({ key: 'spawnsweep-badge' }))?.text).toBe('☾ 2')
+    await ui.press({ key: 'spawnsweep-badge' })
+    await ui.unmount()
+  }
+  expect(opened).toEqual(['spawnsweep', 'spawnsweep'])
+})

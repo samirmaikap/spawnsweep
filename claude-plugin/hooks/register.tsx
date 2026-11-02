@@ -175,7 +175,6 @@ async function refresh($: Engine): Promise<void> {
     if (ran.exitCode !== 0) throw new Error(ran.stderr.trim() || `The scan stopped with exit code ${ran.exitCode}.`)
     const next = readScan(ran.stdout, await $.clock.now())
     await update($, snapshot, () => next)
-    $.ui.status(`SpawnSweep: ${summary(next)}`)
   } catch (err) {
     const at = await $.clock.now()
     const error = err instanceof Error ? err.message : String(err)
@@ -185,7 +184,6 @@ async function refresh($: Engine): Promise<void> {
       isScanning: false,
       error,
     }))
-    $.ui.status('SpawnSweep: scan failed')
   } finally {
     isBusy = false
   }
@@ -195,7 +193,7 @@ export const register: Register = on => {
   on('session.start', async ($, e, next) => {
     const started = await next(e)
     await $.command.register({ name: 'spawnsweep', description: "Show what's running on this Mac, from SpawnSweep" })
-    void $.ui.open({ id: PANE, title: 'SpawnSweep' })
+    $.ui.status(undefined)   // the old text status line, if an earlier version left one
     void refresh($)
     $.clock.every(EVERY_MS, () => void refresh($))
     return started
@@ -205,6 +203,29 @@ export const register: Register = on => {
     await $.ui.open({ id: PANE, title: 'SpawnSweep' })
     void refresh($)
     return { text: 'SpawnSweep pane opened.' }
+  })
+
+  // One control in the footer, beside the session's mode labels: the moon and how many things are running. A click
+  // opens the pane. The engine's labels are drawn first, as they were.
+  on('ui.render', { component: 'SessionMode' }, async ($, e, next) => {
+    const s = await read($, snapshot)
+    if (!s) return next(e)
+    const { Box, Text, Button } = $.ui.resolve(e)
+    const failed = s.error !== undefined
+    return (
+      <Box flexDirection="row" gap={1} alignItems="center">
+        {e.props.modes.length > 0 ? <Text dimColor>{e.props.modes.join(' & ')}</Text> : null}
+        <Button
+          key="spawnsweep-badge"
+          plain
+          dimColor={s.running === 0 && !failed}
+          label={failed ? 'SpawnSweep: scan failed' : `SpawnSweep: ${summary(s)}`}
+          onPress={() => void $.ui.open({ id: PANE, title: 'SpawnSweep', focus: true })}
+        >
+          ☾ {failed ? '!' : String(s.running)}
+        </Button>
+      </Box>
+    )
   })
 
   on('ui.render', { component: 'Pane', requestId: PANE }, async ($, e) => {
