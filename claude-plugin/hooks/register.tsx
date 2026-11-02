@@ -11,7 +11,7 @@ const SITE = 'https://samirmaikap.github.io/spawnsweep/'
 const EVERY_MS = 30_000
 const WORKTREES_SHOWN = 12
 
-const snapshot = atom({ plugin: 'spawnsweep-pane', key: 'snapshot' } as const, null as Snapshot | null)
+const snapshot = atom({ plugin: 'spawnsweep', key: 'snapshot' } as const, null as Snapshot | null)
 
 /** The app's own `Fmt.bytes`: decimal units, one decimal under 10. */
 function bytes(b: number): string {

@@ -88,7 +88,7 @@ test('the pane draws the scan on every surface that docks a pane', async ($, on)
 
   for (const surface of ['terminal', 'desktop'] as const) {
     const ui = await $.ui.mount({
-      plugin: 'spawnsweep-pane',
+      plugin: 'spawnsweep',
       surface,
       component: 'Pane',
       requestId: 'spawnsweep',
@@ -115,7 +115,7 @@ test('the pane lists worktrees from the JSON scan, in-use ones first', async ($,
   await clock.settle()
 
   const ui = await $.ui.mount({
-    plugin: 'spawnsweep-pane',
+    plugin: 'spawnsweep',
     surface: 'desktop',
     component: 'Pane',
     requestId: 'spawnsweep',
@@ -142,7 +142,7 @@ test('the count shows as the status line, and the terminal footer badge opens th
   expect(opened).toEqual([])
   expect(JSON.stringify(statuses)).toContain('2 running')
 
-  const footer = await $.ui.mount({ plugin: 'spawnsweep-pane', surface: 'terminal', component: 'SessionMode', props: { modes: ['focus'] } })
+  const footer = await $.ui.mount({ plugin: 'spawnsweep', surface: 'terminal', component: 'SessionMode', props: { modes: ['focus'] } })
   expect((await footer.find({ type: 'Text', text: /focus/ }))?.text).toBe('focus')
   expect((await footer.find({ key: 'spawnsweep-badge' }))?.text).toBe('☾ 2')
   await footer.press({ key: 'spawnsweep-badge' })

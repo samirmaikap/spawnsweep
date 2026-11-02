@@ -63,6 +63,6 @@ export type ScanJSON = {
 
 declare module 'claude-code' {
   interface PluginState {
-    'spawnsweep-pane': { snapshot: Snapshot | null }
+    'spawnsweep': { snapshot: Snapshot | null }
   }
 }

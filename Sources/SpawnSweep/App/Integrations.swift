@@ -123,7 +123,7 @@ enum Integrations {
     // MARK: - Claude Code pane plugin (claude-plugin/ in this repo)
 
     static let paneMarketplace = "samirmaikap/spawnsweep"
-    static let panePlugin = "spawnsweep-pane@spawnsweep"
+    static let panePlugin = "spawnsweep@spawnsweep"
     static var paneCommands: String {
         "claude plugin marketplace add \(paneMarketplace)\nclaude plugin install \(panePlugin) --scope user"
     }

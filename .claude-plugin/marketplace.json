@@ -4,7 +4,7 @@
   "description": "Claude Code plugins for SpawnSweep, the macOS menu bar cleaner for AI coding agents.",
   "plugins": [
     {
-      "name": "spawnsweep-pane",
+      "name": "spawnsweep",
       "source": "./claude-plugin",
       "description": "A SpawnSweep pane: what your AI coding agents left running on this Mac, from the SpawnSweep app."
     }

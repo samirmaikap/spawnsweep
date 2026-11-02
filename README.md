@@ -149,7 +149,7 @@ SpawnSweep deletes as little as possible and asks first.
 A plugin for Claude Code and the Claude desktop app puts what SpawnSweep sees in a side pane next to your chat: each agent session with its dev servers, ports and Docker stacks, and loose simulators. A running count sits under the prompt; in a terminal session it's a moon you can click to open the pane, and `/spawnsweep` opens it anywhere. It refreshes every 30 seconds and needs SpawnSweep in Applications. At the prompt of a Claude Code terminal session:
 
 ```
-/plugin install spawnsweep-pane --marketplace samirmaikap/spawnsweep
+/plugin install spawnsweep --marketplace samirmaikap/spawnsweep
 ```
 
 In the desktop app, click **+** next to the prompt box, then **Plugins**, **Add marketplace** with `samirmaikap/spawnsweep`, then **Add plugin**. The plugin's source and details are in [`claude-plugin/`](claude-plugin).

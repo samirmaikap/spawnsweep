@@ -18,7 +18,7 @@ A running count sits under the prompt (`4 running`). In a terminal session it's 
 At the prompt of a Claude Code terminal session:
 
 ```
-/plugin install spawnsweep-pane --marketplace samirmaikap/spawnsweep
+/plugin install spawnsweep --marketplace samirmaikap/spawnsweep
 ```
 
 Answer `y` to add the marketplace, then pick a scope (user scope loads it in every session).
@@ -26,7 +26,7 @@ Answer `y` to add the marketplace, then pick a scope (user scope loads it in eve
 From a shell:
 
 ```bash
-claude plugin install spawnsweep-pane --marketplace samirmaikap/spawnsweep
+claude plugin install spawnsweep --marketplace samirmaikap/spawnsweep
 ```
 
 In the Claude desktop app, where `/plugin` doesn't run: click **+** next to the prompt box, then **Plugins**, **Add marketplace** with `samirmaikap/spawnsweep`, then **Add plugin**. A plugin installed from a terminal at the user scope also loads in the desktop app's Code tab.
