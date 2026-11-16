@@ -3,9 +3,9 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SpawnSweep: the Mac cleaner for AI coding agents</title>
+<title>SpawnSweep: the Mac cleaner for AI coding agents like Claude Code</title>
 <meta name="description" content="Free, open-source Mac app that cleans up the dev servers, busy ports, simulators and git worktrees Claude Code, Codex and Cursor leave running.">
-<link rel="canonical" href="https://samirmaikap.github.io/spawnsweep/">
+<link rel="canonical" href="https://samirmaikap.dev/spawnsweep/">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#F2F6EF" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1C2821" media="(prefers-color-scheme: dark)">
@@ -14,10 +14,10 @@
 
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="SpawnSweep">
-<meta property="og:url" content="https://samirmaikap.github.io/spawnsweep/">
+<meta property="og:url" content="https://samirmaikap.dev/spawnsweep/">
 <meta property="og:title" content="SpawnSweep: the Mac cleaner for AI coding agents">
 <meta property="og:description" content="See what Claude Code, Codex and Cursor left running on your Mac, and put it away without losing a line of work. Free and open source.">
-<meta property="og:image" content="https://samirmaikap.github.io/spawnsweep/images/og.png">
+<meta property="og:image" content="https://samirmaikap.dev/spawnsweep/images/og.png">
 <meta property="og:image:width" content="1280">
 <meta property="og:image:height" content="640">
 <meta property="og:image:alt" content="SpawnSweep, the macOS menu bar cleaner for AI coding agents">
@@ -29,19 +29,19 @@
   "@graph": [
     {
       "@type": "SoftwareApplication",
-      "@id": "https://samirmaikap.github.io/spawnsweep/#app",
+      "@id": "https://samirmaikap.dev/spawnsweep/#app",
       "name": "SpawnSweep",
       "description": "A free, open-source macOS menu bar app that cleans up after AI coding agents. It finds the dev servers, busy ports, simulators, Docker stacks and git worktrees that Claude Code, Codex, Cursor, Gemini and Aider leave running, shows which agent session started them, and cleans them up with a preview first.",
-      "url": "https://samirmaikap.github.io/spawnsweep/",
+      "url": "https://samirmaikap.dev/spawnsweep/",
       "applicationCategory": "DeveloperApplication",
       "applicationSubCategory": "Mac cleaner",
       "operatingSystem": "macOS 14 or later on Apple silicon",
       "downloadUrl": "https://github.com/samirmaikap/spawnsweep/releases/latest/download/SpawnSweep.zip",
-      "image": "https://samirmaikap.github.io/spawnsweep/images/icon.png",
+      "image": "https://samirmaikap.dev/spawnsweep/images/icon.png",
       "screenshot": [
-        "https://samirmaikap.github.io/spawnsweep/images/this-mac.jpg",
-        "https://samirmaikap.github.io/spawnsweep/images/autopilot.jpg",
-        "https://samirmaikap.github.io/spawnsweep/images/pro.jpg"
+        "https://samirmaikap.dev/spawnsweep/images/this-mac.jpg",
+        "https://samirmaikap.dev/spawnsweep/images/autopilot.jpg",
+        "https://samirmaikap.dev/spawnsweep/images/pro.jpg"
       ],
       "license": "https://opensource.org/licenses/MIT",
       "isAccessibleForFree": true,
@@ -304,7 +304,7 @@ footer p { margin: 0; }
         <a class="btn btn-primary" href="https://github.com/samirmaikap/spawnsweep/releases/latest/download/SpawnSweep.zip">Download for Mac</a>
         <a class="btn btn-quiet" href="https://github.com/samirmaikap/spawnsweep">View the source</a>
       </div>
-      <p class="hint">macOS 14 or later on Apple silicon. Opening the downloaded zip the first time? <a href="https://github.com/samirmaikap/spawnsweep#if-macos-says-spawnsweep-not-opened">Here's how</a>.</p>
+      <p class="hint">macOS 14 or later on Apple silicon. This build isn't notarized by Apple yet, so macOS asks once when you open the download. <a href="https://github.com/samirmaikap/spawnsweep#if-macos-says-spawnsweep-not-opened">Here's how</a>.</p>
     </div>
 
     <div class="demo" id="demo">
@@ -427,7 +427,7 @@ footer p { margin: 0; }
 <section id="safety">
   <div class="wrap read">
     <h2>Deletes as little as possible, and asks first</h2>
-    <p class="sub">Everything stays on your Mac. No account, no telemetry.</p>
+    <p class="sub">Everything stays on your Mac. No account, no telemetry. Pro only checks its license key, about once a week.</p>
     <ul class="safety">
       <li><strong>Every change starts with a preview.</strong> Active and pinned sessions are never swept.</li>
       <li><strong>Processes are stopped gently:</strong> TERM, up to 10 seconds, then KILL. Never outside your user or inside <code>/Applications</code>.</li>

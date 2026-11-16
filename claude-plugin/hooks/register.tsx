@@ -6,7 +6,7 @@ import type { Item, ScanJSON, ScanResource, Session, Snapshot, WorktreeItem } fr
 const PANE = 'spawnsweep'
 const APP = '/Applications/SpawnSweep.app/Contents/MacOS/SpawnSweep'
 const BUNDLE_ID = 'app.spawnsweep.mac'
-const SITE = 'https://samirmaikap.github.io/spawnsweep/'
+const SITE = 'https://samirmaikap.dev/spawnsweep/'
 // ponytail: one scan takes about 4 s of real work, so 30 s keeps the pane fresh without costing CPU.
 const EVERY_MS = 30_000
 const WORKTREES_SHOWN = 12
