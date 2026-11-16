@@ -12,7 +12,7 @@
 <p align="center">
   <a href="https://github.com/samirmaikap/spawnsweep/releases/latest/download/SpawnSweep.zip"><img alt="Download for macOS" src="https://img.shields.io/badge/Download-for%20macOS-0E9F5B?style=for-the-badge&logo=apple&logoColor=white"></a>
   &nbsp;
-  <a href="https://samirmaikap.github.io/spawnsweep/"><img alt="Website" src="https://img.shields.io/badge/Website-samirmaikap.github.io%2Fspawnsweep-263A30?style=for-the-badge"></a>
+  <a href="https://samirmaikap.dev/spawnsweep/"><img alt="Website" src="https://img.shields.io/badge/Website-samirmaikap.dev%2Fspawnsweep-263A30?style=for-the-badge"></a>
 </p>
 
 <p align="center">

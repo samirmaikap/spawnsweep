@@ -1,3 +1,3 @@
-# GitHub Pages serves this folder as https://samirmaikap.github.io/spawnsweep/
+# GitHub Pages serves this folder as https://samirmaikap.dev/spawnsweep/ (samirmaikap.github.io/spawnsweep/ redirects there)
 # Keep the design notes and plans out of the site.
 exclude: [DESIGN.md, superpowers]

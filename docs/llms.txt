@@ -10,8 +10,8 @@
 
 ## Docs
 
-- [Website](https://samirmaikap.github.io/spawnsweep/): what SpawnSweep finds, how it compares, Pro, safety rules
-- [FAQ](https://samirmaikap.github.io/spawnsweep/#faq): freeing a port on a Mac, stopping dev servers agents left running, cleaning git worktrees and Xcode simulators
+- [Website](https://samirmaikap.dev/spawnsweep/): what SpawnSweep finds, how it compares, Pro, safety rules
+- [FAQ](https://samirmaikap.dev/spawnsweep/#faq): freeing a port on a Mac, stopping dev servers agents left running, cleaning git worktrees and Xcode simulators
 - [README](https://github.com/samirmaikap/spawnsweep#readme): features, install, safety rules, helpers (MCP server, Claude Code SessionEnd hook)
 - [Latest release](https://github.com/samirmaikap/spawnsweep/releases/latest): download and release notes
 
