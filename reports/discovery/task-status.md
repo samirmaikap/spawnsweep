@@ -5,7 +5,7 @@ Format: `ID | status | owner | branch/PR | evidence | blocker | next action | la
 | ID | Status | Owner | Branch/PR | Evidence | Blocker | Next action | Last checked |
 |---|---|---|---|---|---|---|---|
 | DISC-00 | DONE | agent | disc/canonical-domain | baseline-2026-11-16.md | none | none | 2026-11-16 |
-| DISC-01 | REVIEW | agent, owner | disc/canonical-domain | Every site URL moved to samirmaikap.dev/spawnsweep/; repo Website field updated | Merge to main deploys it. Plain HTTP still serves 200 | Merge, then verify live canonical. Turn on Enforce HTTPS in spawnsweep Pages settings | 2026-11-16 |
+| DISC-01 | REVIEW | agent, owner | disc/canonical-domain | Every site URL moved to samirmaikap.dev/spawnsweep/; repo Website field updated | Merge to main deploys it | Merge, then verify live canonical. Enforce HTTPS turned on 2026-11-16; http now 301s to https | 2026-11-16 |
 | DISC-02 | BLOCKED_OWNER | owner | user site repo | Crawlers allowed; root sitemap and home page don't list /spawnsweep/ | Fix lives in samirmaikap/samirmaikap.github.io; console access | Add /spawnsweep/ to root sitemap and link it from samirmaikap.dev. Verify the property in Google Search Console and Bing, submit the sitemap | 2026-11-16 |
 | DISC-03 | REVIEW | agent | disc/canonical-domain | JSON-LD parses, one entity @id, title names Claude Code | Rich Results Test needs the live page | Run Rich Results Test and a social card check after deploy | 2026-11-16 |
 | DISC-04 | REVIEW | agent | disc/canonical-domain | All links 200; page now states the build isn't notarized and mentions the Pro license check | none | Manual viewport, keyboard and dark mode pass | 2026-11-16 |
