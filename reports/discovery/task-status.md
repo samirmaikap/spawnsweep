@@ -1,5 +1,7 @@
 # Discovery task status
 
+See [SEO progress](SEO_PROGRESS.md) for the current implementation and owner handoff. The earlier task snapshots below preserve the original audit history.
+
 Format: `ID | status | owner | branch/PR | evidence | blocker | next action | last checked`. See SS-DISCOVERY-001 and `baseline-2026-11-16.md`.
 
 | ID | Status | Owner | Branch/PR | Evidence | Blocker | Next action | Last checked |

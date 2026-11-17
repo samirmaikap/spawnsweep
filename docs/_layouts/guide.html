@@ -11,11 +11,12 @@
 <title>{{ title | escape }}</title>
 <meta name="description" content="{{ page.description | escape }}">
 <link rel="canonical" href="{{ canonical }}">
+<meta name="robots" content="max-image-preview:large">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#F2F6EF" media="(prefers-color-scheme: light)">
 <meta name="theme-color" content="#1C2821" media="(prefers-color-scheme: dark)">
-<link rel="icon" type="image/png" href="../../images/icon.png">
-<link rel="stylesheet" href="../../site.css">
+<link rel="icon" type="image/png" href="../images/icon-small.png">
+<link rel="stylesheet" href="../site.css">
 <meta property="og:type" content="article">
 <meta property="og:site_name" content="SpawnSweep">
 <meta property="og:url" content="{{ canonical }}">
@@ -63,23 +64,37 @@
 </head>
 <body>
 <header class="wrap top">
-  <a class="brand" href="../../"><img src="../../images/icon.png" alt="" width="30" height="30">SpawnSweep</a>
+  <a class="brand" href="../"><img src="../images/icon-small.png" alt="" width="30" height="30">SpawnSweep</a>
   <nav aria-label="Main">
     <a class="gh" href="https://github.com/samirmaikap/spawnsweep">GitHub</a>
   </nav>
 </header>
 <main class="wrap guide">
-  <nav aria-label="Breadcrumb"><a href="../../">SpawnSweep</a> / <span aria-current="page">{{ page.title | escape }}</span></nav>
+  <nav aria-label="Breadcrumb"><a href="../">SpawnSweep</a> / <span aria-current="page">{{ page.title | escape }}</span></nav>
   <article>
     <h1>{{ page.title | escape }}</h1>
     <p class="byline">From <a href="https://github.com/samirmaikap/spawnsweep">the SpawnSweep project</a>, maintained by <a href="https://github.com/samirmaikap">Samir Maikap</a>.</p>
     {{ content }}
+    {% if page.media == "storage" %}
+      <figure class="guide-media">
+        <img src="../images/this-mac.jpg" width="1003" height="731" loading="lazy" alt="SpawnSweep’s This Mac page with storage, memory and cleanup categories">
+        <figcaption>The This Mac view shows where disk and memory are in use.</figcaption>
+      </figure>
+    {% elsif page.media == "demo" %}
+      <figure class="guide-media">
+        <video class="video" controls preload="none" playsinline poster="../images/launch-poster.jpg" width="1920" height="1080" aria-describedby="demo-description">
+          <source src="../images/launch.mp4" type="video/mp4">
+          <a href="../images/launch.mp4">Download the demo video</a>
+        </video>
+        <figcaption id="demo-description">A 20-second illustrated demo shows sample coding sessions with occupied ports, background processes, and booted simulators. SpawnSweep groups their leftovers for review.</figcaption>
+      </figure>
+    {% endif %}
   </article>
   <div class="actions">
     <a class="btn btn-primary" href="https://github.com/samirmaikap/spawnsweep/releases/latest/download/SpawnSweep.zip">Download for Mac</a>
-    <a class="btn btn-quiet" href="../../#guides">All Mac cleanup guides</a>
+    <a class="btn btn-quiet" href="../#guides">All Mac cleanup guides</a>
   </div>
-  <p class="hint">Free, open-source app for macOS 14 or later on Apple silicon. <a href="../../">Install details</a></p>
+  <p class="hint">Free, open-source app for macOS 14 or later on Apple silicon. <a href="../">Install details</a></p>
 </main>
 <footer>
   <div class="wrap">

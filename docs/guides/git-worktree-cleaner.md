@@ -2,7 +2,8 @@
 layout: guide
 title: "Clean up old Git worktrees on macOS"
 description: "Find Git worktrees created by AI coding agents. Check for local changes, preserve ignored files such as .env, and reclaim disk space from old checkouts."
-permalink: /guides/clean-up-git-worktrees-mac/
+permalink: /git-worktree-cleaner/
+media: storage
 ---
 
 Run `git worktree list` from the repository to find linked checkouts left by AI coding agents. Before removing a worktree, check its branch and status, confirm that its work has been saved, and copy any ignored files you still need. Ignored files such as `.env` and local databases usually live only in that checkout.
@@ -14,7 +15,7 @@ git worktree list
 git -C "/path/to/worktree" status --short --ignored
 ```
 
-Use the path reported by Git. In the status output, `??` marks untracked files and `!!` marks ignored files. Check for local edits, confirm the branch's commits are where you want them, and save the ignored files you will need. If a dev server is running from the checkout, [finish the session and stop its processes](../stop-leftover-ai-agent-dev-servers-mac/) first.
+Use the path reported by Git. In the status output, `??` marks untracked files and `!!` marks ignored files. Check for local edits, confirm the branch's commits are where you want them, and save the ignored files you will need. If a dev server is running from the checkout, [finish the session and stop its processes](../orphaned-process-cleaner/) first.
 
 When a linked worktree is clean and disposable, remove it with Git:
 
@@ -31,4 +32,8 @@ Open **Storage** to see worktree status and size by repository.
 - **Slim** deletes eligible, rebuildable folders such as ignored `node_modules` or `.next` while keeping the checkout, source and local configuration. When you return to the worktree, reinstall dependencies or rebuild generated files.
 - **Recycle** previews the removal of an eligible worktree and saves ignored files that cannot be rebuilt, such as `.env` and local databases. **Restore** can recreate the checkout and put those saved files back during your configured retention period. Reinstall dependencies after restoring.
 
-Use Slim when you anticipate returning to a branch but want its dependencies off disk. Review the Recycle preview when the checkout has served its purpose. [SpawnSweep cleanup rules](../../#safety)
+Use Slim when you anticipate returning to a branch but want its dependencies off disk. Review the Recycle preview when the checkout has served its purpose. [SpawnSweep cleanup rules](../#safety)
+
+## Can I remove a worktree after a squash merge?
+
+Git may still report commits on the worktree branch that are absent from the destination branch after a squash merge. Check the merged pull request and compare the changes before deciding what to archive. Treat Git’s clean-worktree check and your merge review as separate checks.

@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>The macOS menu bar cleaner for AI coding agents.</strong><br>
-  Find leftover dev servers from Claude Code, Codex and Cursor, free busy ports, and review Git worktrees, simulators and Docker stacks.
+  Reclaim disk space and recover system resources after Claude Code, OpenAI Codex or Cursor. Review dev servers, ports, Git worktrees, simulators and Docker stacks before cleanup.
 </p>
 
 <p align="center">
@@ -48,31 +48,23 @@
 
 **SpawnSweep is a free, open-source Mac app that cleans up after AI coding agents.** It groups detected resources by agent session when it can identify their owner. Review what to stop or remove from Claude Code, the Claude desktop app, Codex, Cursor, Gemini CLI and Aider sessions.
 
-Native SwiftUI for macOS 14 or later on Apple silicon. Free and open source (MIT); SpawnSweep Pro is a one-time $9 for up to 3 Macs. Everything stays on your Mac. No account, no telemetry.
+Native SwiftUI for macOS 14 or later on Apple silicon. The core app is free and open source under the MIT license. SpawnSweep Pro is a one-time $9 purchase for up to 3 Macs. Cleanup scans run locally.
 
 ## Install
 
-Paste this into Terminal. It downloads the latest release into Applications and opens it, with no macOS warning:
+1. **[Download SpawnSweep.zip](https://github.com/samirmaikap/spawnsweep/releases/latest/download/SpawnSweep.zip)** from the project’s GitHub release.
+2. Extract the ZIP and move **SpawnSweep.app** to Applications.
+3. Open the app. The download includes Pro features that you can unlock with a key. The free features are available immediately.
+
+If you prefer Terminal, [review the installer source](scripts/install.sh) first. The script downloads the latest release, replaces an existing copy in Applications or `~/Applications`, and launches the app.
 
 ```bash
 curl -fsSL https://raw.githubusercontent.com/samirmaikap/spawnsweep/main/scripts/install.sh | bash
 ```
 
-Or **[download SpawnSweep.zip](https://github.com/samirmaikap/spawnsweep/releases/latest/download/SpawnSweep.zip)**, open it, and move SpawnSweep to Applications. The download includes SpawnSweep Pro, which a license key unlocks; everything free works right away.
-
 ### If macOS says "SpawnSweep" Not Opened
 
-SpawnSweep isn't notarized by Apple yet. The first time you open a copy downloaded in a browser, macOS says *Apple could not verify "SpawnSweep" is free of malware*. It shows this for every app that isn't notarized, and it only happens once.
-
-1. Click **Done**, not Move to Bin.
-2. Open **System Settings › Privacy & Security** and scroll to the bottom. Next to the message about SpawnSweep, click **Open Anyway**, then confirm with your password or Touch ID. The button only stays for a while after the warning; if you don't see it, open SpawnSweep again, then come back.
-3. SpawnSweep opens, and macOS won't ask again.
-
-Or clear the download flag in Terminal and open it normally (change the path if the app isn't in Applications):
-
-```bash
-xattr -dr com.apple.quarantine /Applications/SpawnSweep.app
-```
+The current release uses ad hoc signing. macOS can block its first launch. After verifying that your download came from the project’s GitHub release, open **System Settings → Privacy & Security** and use **Open Anyway** for SpawnSweep. See [release verification](reports/discovery/PRODUCT_TRUST.md#verify-the-release-before-running-it) for the ZIP digest and signing checks. You can also [build the free edition from source](#build-from-source).
 
 ## Highlights
 
@@ -81,24 +73,27 @@ xattr -dr com.apple.quarantine /Applications/SpawnSweep.app
   <img src="docs/images/autopilot.jpg" width="49%" alt="SpawnSweep Autopilot: dry-run cleanup rules for idle simulators, finished agent sessions, end of day, battery saver and quiet git worktrees">
 </p>
 
-- **Every agent session, and what it left running.** Claude Code, the Claude app, Codex, Cursor, Gemini and Aider, each with its dev servers, watchers, headless browsers and tunnels. Put a finished session away in one click, or sweep them all at the end of the day.
-- **A ports board.** Every localhost listener with its project, git branch, uptime and the session that started it. Free a port in one click.
-- **Git worktrees under control.** Size and status per repo. Slim the rebuildable folders, push and remove, or recycle merged ones, with `.env` and other ignored files saved so Restore brings everything back.
+- **Detected agent sessions and resources.** Review dev servers, watchers, headless browsers and tunnels associated with Claude Code, the Claude app, Codex, Cursor, Gemini CLI and Aider.
+- **A ports board.** See detected developer listeners with project, branch, uptime and session context where available. Review the process before freeing a port.
+- **Git worktrees under control.** Size and status per repo. Slim the rebuildable folders, push and remove, or recycle merged ones, with eligible ignored files such as `.env` saved for restoration during the retention window.
 - **Simulators and Docker.** Booted simulators and emulators, unused simulator devices, and Docker stacks, each stopped as one unit.
 - **Know when something starts.** A notification when an agent session starts, a simulator boots or a worktree appears, each with its own switch.
 - **Inside Claude.** A 🌔 with the count of what's running in Claude's footer opens a pane beside your chat. [More below](#inside-claude).
 - **Autopilot.** Rules that start as dry runs: simulator bedtime, finished-session leftovers, end of day, battery saver, low disk, merged worktrees.
-- **Safe by design.** A preview before every change, gentle stops, and a log of every change with its way back. [The rules](#safety).
+- **Review and recovery.** Manual previews, guarded process stops and an activity log with recovery actions where available. [Cleanup safeguards](#safety).
 
 The menu bar shows what's running right now, memory used, disk free, and one button to put leftovers away.
 
 ## Mac cleanup guides
 
-- [Port 3000 already in use on Mac](https://samirmaikap.dev/spawnsweep/guides/port-3000-already-in-use-mac/) — identify the listener and stop the right process.
-- [Stop leftover Claude Code and Codex dev servers](https://samirmaikap.dev/spawnsweep/guides/stop-leftover-ai-agent-dev-servers-mac/) — review dev servers, watchers, headless browsers and tunnels by session.
-- [Clean up old Git worktrees](https://samirmaikap.dev/spawnsweep/guides/clean-up-git-worktrees-mac/) — check local changes and preserve ignored files such as `.env`.
-- [Clean up unused Xcode simulators](https://samirmaikap.dev/spawnsweep/guides/clean-up-xcode-simulators-mac/) — shut down booted devices or remove unused devices to reclaim disk space.
-- [Stop leftover Docker Compose stacks](https://samirmaikap.dev/spawnsweep/guides/stop-leftover-docker-stacks-mac/) — stop a local project while keeping its volumes.
+Start with the [AI coding agent cleanup checklist](https://samirmaikap.dev/spawnsweep/ai-coding-agent-cleanup/) for parallel projects, or follow a guide for [Claude Code](https://samirmaikap.dev/spawnsweep/claude-code-cleanup/), [Codex](https://samirmaikap.dev/spawnsweep/codex-cleanup/), or [Cursor](https://samirmaikap.dev/spawnsweep/cursor-cleanup/).
+
+- [Find and free a localhost port](https://samirmaikap.dev/spawnsweep/localhost-port-cleaner/) or fix [port 3000 already in use](https://samirmaikap.dev/spawnsweep/port-3000-already-in-use-mac/).
+- [Stop orphaned dev processes](https://samirmaikap.dev/spawnsweep/orphaned-process-cleaner/) or [stop a leftover Docker Compose stack](https://samirmaikap.dev/spawnsweep/docker-cleanup/).
+- [Reclaim developer disk space](https://samirmaikap.dev/spawnsweep/developer-disk-cleaner/), [review old Git worktrees](https://samirmaikap.dev/spawnsweep/git-worktree-cleaner/), or [clean up unused Xcode simulators](https://samirmaikap.dev/spawnsweep/clean-up-xcode-simulators-mac/).
+- [Compare scope with CleanMyMac](https://samirmaikap.dev/spawnsweep/cleanmymac-alternative/).
+
+SpawnSweep is also listed on [OpenMacApps](https://openmacapps.com/apps/spawnsweep/) and [AlternativeTo](https://alternativeto.net/software/spawnsweep/about/).
 
 ## Inside Claude
 
@@ -119,10 +114,10 @@ SpawnSweep also gives agents an MCP server they can ask "is a dev server already
 | | By hand in Terminal | General Mac cleaners | SpawnSweep |
 |---|---|---|---|
 | **Leftover dev servers, watchers, headless browsers** | Find each one with `ps` or `lsof`, then `kill` it | Not their focus | Grouped by the agent session that started them, stopped gently after a preview |
-| **Busy ports** | `lsof -i :3000`, one port at a time | Not their focus | Every listener with its project, branch and session; free one in a click |
-| **Which agent started what** | Can't tell | Can't tell | Every session: Claude Code, Codex, Cursor, Gemini, Aider |
+| **Busy ports** | `lsof -i :3000`, one port at a time | Not their focus | Detected developer listeners with project, branch and session where available |
+| **Which agent started what** | Inspect ancestry and working directories | Varies by tool | Associates known agent processes and resources when a link is available |
 | **Git worktrees** | `git worktree list` and `remove`; ignored files like `.env` go with it | Not their focus | Size and status per repo; slim or recycle, and restore later |
-| **Simulators and Xcode build data** | `xcrun simctl`, delete DerivedData folders | Some clear DerivedData | Sizes listed, unused simulators removed; DerivedData with Pro |
+| **Simulators and Xcode build data** | `xcrun simctl`, delete DerivedData folders | Some clear DerivedData | Lists sizes and reviews unused simulators and orphaned DerivedData. Pro adds broader cache cleanup. |
 | **App caches, logs, large files** | `du` and manual deletion | Their core feature | With Pro |
 | **Cleans up on its own** | Your own scripts | Scheduled scans | Autopilot rules that start as dry runs; acting on their own with Pro |
 
@@ -150,44 +145,46 @@ The official download scans for free, so you can see what Pro would clean before
 SpawnSweep deletes as little as possible and asks first.
 
 - Manual cleanups start with a preview. Session sweeps skip active and pinned sessions.
-- Processes are checked by start time before they're signalled, stopped gently (TERM, up to 10 seconds, then KILL), and never outside your user or inside `/Applications`.
+- The process scan is scoped to your macOS user. Stops recheck the process start time before each signal, send TERM first, and use KILL for survivors.
 - **Slim** removes only folders git ignores by their own name (`node_modules`, `.next`, `dist`, …), never a folder that holds tracked files, and never in a worktree something is running in.
-- **Recycle** saves every ignored file that can't be rebuilt (`.env`, keys, local databases) before `git worktree remove` (never `--force`). Branches stay in git and Restore brings everything back.
+- **Recycle** saves eligible ignored files under the backup limit (`.env`, keys, local databases) before `git worktree remove` (never `--force`). Branches stay in Git. Backups are capped at 500 MB. Restore can recreate the checkout and saved files during the retention period.
 - **Junk (Pro)** only touches folders apps and tools can rebuild, re-checks each item right before removing it, refuses anything that resolves outside its folder, and skips caches of open apps and IDE local history.
 - **Large files (Pro)** go to the Trash, never straight to deletion.
-- Docker volumes are never touched.
+- Docker cleanup stops containers in the configured context. Check the [Docker context and auto-remove settings](https://samirmaikap.dev/spawnsweep/docker-cleanup/) before stopping a stack.
 
 `SpawnSweep --selftest` runs the checks behind these rules (ignored-file rules, license grace, rule migration; the official build adds the cleaners' path-containment checks).
 
+Stopping a process loses its live state. A relaunch can rerun its command when available. Automatic session sweeps skip weak or folder-only process matches. See [cleanup boundaries and recovery](reports/discovery/PRODUCT_TRUST.md#cleanup-boundaries) and [how to report a security issue](SECURITY.md).
+
 ## Privacy
 
-SpawnSweep runs locally and sends nothing about your Mac anywhere. The only network call checks a Pro license key with Dodo Payments, about once a week. Builds from this source make no network calls. State lives in `~/Library/Application Support/SpawnSweep`; a Pro key lives in your Keychain.
+SpawnSweep scans local resources on your Mac and collects no usage telemetry. Pro contacts Dodo Payments to activate, validate or deactivate a license. State lives in `~/Library/Application Support/SpawnSweep`. The Pro activation record lives in Keychain. The optional Claude pane and MCP tools share resource details with the configured agent client. [What the app stores and transmits](reports/discovery/PRODUCT_TRUST.md#privacy-and-local-state)
 
 ## FAQ
 
 ### How do I find what's using a port on my Mac?
 
-In Terminal, `lsof -nP -iTCP:3000 -sTCP:LISTEN` shows the process listening on port 3000. SpawnSweep's **Ports board** lists every localhost listener at once, with its project, git branch, uptime and the agent session that started it, and frees a port in one click.
+In Terminal, `lsof -nP -iTCP:3000 -sTCP:LISTEN` shows the process listening on port 3000. SpawnSweep's **Ports board** shows detected developer listeners with project, branch, uptime and session context where available. Review the stop action to free a port.
 
 ### How do I stop the dev servers Claude Code or Codex left running?
 
-Open **Sessions**. SpawnSweep groups processes by the agent session that started them, so a finished session shows exactly what it left behind: dev servers, watchers, headless browsers, tunnels. Review the cleanup and SpawnSweep stops them gently. The optional Claude Code SessionEnd hook can stop matched processes automatically when a session ends. Session sweeps skip active and pinned sessions.
+Open **Sessions**. SpawnSweep groups detected dev servers, watchers, headless browsers and tunnels when it can identify their session. Review the cleanup and SpawnSweep stops them gently. The optional Claude Code SessionEnd hook can stop matched processes automatically when a session ends. Session sweeps skip active and pinned sessions.
 
 ### How do I clean up old git worktrees?
 
-`git worktree list` shows them and `git worktree remove <path>` removes one. SpawnSweep's **Storage** page lists worktrees per repo with their status and size. It can slim a worktree (remove rebuildable folders like `node_modules`) or recycle a merged one after saving ignored files such as `.env`, so Restore brings everything back.
+`git worktree list` shows them and `git worktree remove <path>` removes one. SpawnSweep's **Storage** page lists worktrees per repo with their status and size. It can slim a worktree (remove rebuildable folders like `node_modules`) or recycle a merged one after saving ignored files such as `.env`, so Restore can bring back the saved files during the retention window.
 
 ### How do I free disk space used by Xcode simulators?
 
-`xcrun simctl delete unavailable` removes simulators for runtimes you no longer have. SpawnSweep's **Storage** page lists simulator devices and Xcode DerivedData by size and removes unused simulator devices with a preview. SpawnSweep Pro's junk cleaner also clears DerivedData.
+Start with `xcrun simctl list devices unavailable` to review devices missing their runtime. Deleting a device removes its local apps and test data. SpawnSweep can preview unused device removal. [Review simulator devices and runtimes](https://samirmaikap.dev/spawnsweep/clean-up-xcode-simulators-mac/).
 
 ### Which AI coding agents does SpawnSweep support?
 
-Claude Code, the Claude desktop app, Codex, Cursor, Gemini and Aider. Processes are matched to the session that started them. Anything else listening on a port still shows up on the Ports board.
+Claude Code, the Claude desktop app, Codex, Cursor, Gemini CLI and Aider. Detected processes are linked to sessions where possible. Resources may also appear in Ports or Resources without a session match.
 
 ### Is SpawnSweep a CleanMyMac alternative?
 
-For developers, mostly. SpawnSweep cleans what general Mac cleaners don't see: agent sessions, dev servers, busy ports, git worktrees and Docker stacks. SpawnSweep Pro adds the classic cleaning: app and developer caches, logs, old installers, and large & old files. It isn't an antivirus or an app uninstaller.
+SpawnSweep focuses on developer sessions, dev servers, ports and worktrees. Pro adds app and developer cache cleanup. See the [developer cleanup comparison](https://samirmaikap.dev/spawnsweep/cleanmymac-alternative/) for the scope of each tool.
 
 ### Is SpawnSweep free?
 

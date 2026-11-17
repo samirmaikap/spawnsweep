@@ -2,7 +2,8 @@
 layout: guide
 title: "Port 3000 already in use on Mac? Find and free it"
 description: "Find the process listening on port 3000 in macOS, identify its project, and stop the correct dev server when Next.js or an AI coding agent reports a busy port."
-permalink: /guides/port-3000-already-in-use-mac/
+permalink: /port-3000-already-in-use-mac/
+media: demo
 ---
 
 Run `lsof -nP -iTCP:3000 -sTCP:LISTEN` in Terminal to see what is listening on TCP port 3000. Check the process and its working directory before stopping it. A previous `next dev` command can still own the port after you finish a Claude Code, Codex or Cursor session.
@@ -34,4 +35,8 @@ See `man lsof`, `man ps` and `man kill` in macOS Terminal for command details.
 
 Open **Ports** in SpawnSweep to see local listeners together. Where the app can identify them, the row includes the project, Git branch and agent session. Select **Free port** on the listener you recognize and review the process before confirming. Pinned sessions and protected ports stay blocked from this action.
 
-If a port conflict is one symptom of a finished coding session, [review its other leftover processes](../stop-leftover-ai-agent-dev-servers-mac/).
+If a port conflict is one symptom of a finished coding session, [review its other leftover processes](../orphaned-process-cleaner/).
+
+## Why can the browser load a different project after I restart my server?
+
+An old server can keep serving port 3000 while your new server selects another port. Compare the startup URL in your terminal with the URL in your browser. The [localhost port guide](../localhost-port-cleaner/) also covers IPv6, Docker mappings and protected ports.

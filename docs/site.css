@@ -185,7 +185,7 @@ footer p { margin: 0; }
   .shots { grid-template-columns: 1fr; }
   .popover { margin-inline: auto; }
   .pro { padding: 24px; gap: 24px; }
-  .top nav a:not(.gh) { display: none; }
+  .top nav a:not(.gh, .guides-link) { display: none; }
   section { padding: 48px 0; }
 }
 @media (prefers-reduced-motion: reduce) { .group li { transition: none; } }
@@ -199,6 +199,12 @@ footer p { margin: 0; }
 .guide .byline { color: var(--muted); font-size: 14px; margin-bottom: 28px; }
 .guide li + li { margin-top: .7em; }
 .guide code { overflow-wrap: anywhere; }
-.guide pre { padding: 14px 16px; overflow-x: auto; border-radius: 10px; background: var(--tint); }
+.guide pre { padding: 14px 16px; white-space: pre-wrap; border-radius: 10px; background: var(--tint); }
 .guide pre code { padding: 0; }
 .guide .actions { margin-top: 32px; }
+
+.guide table { min-width: 0; }
+.guide th, .guide td { padding-inline: 10px; }
+.guide-media { margin: 32px 0 0; }
+.guide-media img { height: auto; border-radius: 12px; border: 1px solid var(--line); }
+.guide-media figcaption { margin-top: 8px; color: var(--muted); font-size: 14px; }
