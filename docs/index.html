@@ -3,8 +3,8 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>SpawnSweep: the Mac cleaner for AI coding agents like Claude Code</title>
-<meta name="description" content="Free, open-source Mac app that cleans up the dev servers, busy ports, simulators and git worktrees Claude Code, Codex and Cursor leave running.">
+<title>Mac Cleaner for AI Coding Agents | SpawnSweep</title>
+<meta name="description" content="Find and stop leftover dev servers, free busy ports, and clean up Git worktrees, simulators and Docker stacks. Free macOS app for Claude Code, Codex and Cursor.">
 <link rel="canonical" href="https://samirmaikap.dev/spawnsweep/">
 <meta name="color-scheme" content="light dark">
 <meta name="theme-color" content="#F2F6EF" media="(prefers-color-scheme: light)">
@@ -15,26 +15,41 @@
 <meta property="og:type" content="website">
 <meta property="og:site_name" content="SpawnSweep">
 <meta property="og:url" content="https://samirmaikap.dev/spawnsweep/">
-<meta property="og:title" content="SpawnSweep: the Mac cleaner for AI coding agents">
-<meta property="og:description" content="See what Claude Code, Codex and Cursor left running on your Mac, and put it away without losing a line of work. Free and open source.">
+<meta property="og:title" content="Mac Cleaner for AI Coding Agents | SpawnSweep">
+<meta property="og:description" content="Find and stop leftover dev servers, free busy ports, and clean up Git worktrees, simulators and Docker stacks. Free macOS app for Claude Code, Codex and Cursor.">
 <meta property="og:image" content="https://samirmaikap.dev/spawnsweep/images/og.png">
 <meta property="og:image:width" content="1280">
 <meta property="og:image:height" content="640">
 <meta property="og:image:alt" content="SpawnSweep, the macOS menu bar cleaner for AI coding agents">
 <meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Mac Cleaner for AI Coding Agents | SpawnSweep">
+<meta name="twitter:description" content="Find and stop leftover dev servers, free busy ports, and clean up Git worktrees, simulators and Docker stacks. Free macOS app for Claude Code, Codex and Cursor.">
+<meta name="twitter:image" content="https://samirmaikap.dev/spawnsweep/images/og.png">
+<meta name="twitter:image:alt" content="SpawnSweep, the macOS menu bar cleaner for AI coding agents">
 
 <script type="application/ld+json">
 {
   "@context": "https://schema.org",
   "@graph": [
     {
+      "@type": "WebPage",
+      "@id": "https://samirmaikap.dev/spawnsweep/#page",
+      "url": "https://samirmaikap.dev/spawnsweep/",
+      "name": "Mac Cleaner for AI Coding Agents | SpawnSweep",
+      "description": "Find and stop leftover dev servers, free busy ports, and clean up Git worktrees, simulators and Docker stacks. Free macOS app for Claude Code, Codex and Cursor.",
+      "inLanguage": "en",
+      "mainEntity": {
+        "@id": "https://samirmaikap.dev/spawnsweep/#app"
+      }
+    },
+    {
       "@type": "SoftwareApplication",
       "@id": "https://samirmaikap.dev/spawnsweep/#app",
       "name": "SpawnSweep",
-      "description": "A free, open-source macOS menu bar app that cleans up after AI coding agents. It finds the dev servers, busy ports, simulators, Docker stacks and git worktrees that Claude Code, Codex, Cursor, Gemini and Aider leave running, shows which agent session started them, and cleans them up with a preview first.",
+      "description": "A free, open-source macOS menu bar app for cleaning up after AI coding agents. Find leftover dev servers, busy ports, Git worktrees, simulators and Docker stacks. See their agent session when available and preview manual cleanup.",
       "url": "https://samirmaikap.dev/spawnsweep/",
       "applicationCategory": "DeveloperApplication",
-      "applicationSubCategory": "Mac cleaner",
+      "applicationSubCategory": "AI coding agent cleanup",
       "operatingSystem": "macOS 14 or later on Apple silicon",
       "downloadUrl": "https://github.com/samirmaikap/spawnsweep/releases/latest/download/SpawnSweep.zip",
       "image": "https://samirmaikap.dev/spawnsweep/images/icon.png",
@@ -46,233 +61,48 @@
       "license": "https://opensource.org/licenses/MIT",
       "isAccessibleForFree": true,
       "offers": [
-        { "@type": "Offer", "name": "SpawnSweep", "price": "0", "priceCurrency": "USD" },
-        { "@type": "Offer", "name": "SpawnSweep Pro", "description": "One-time purchase, up to 3 Macs", "price": "9", "priceCurrency": "USD", "url": "https://checkout.dodopayments.com/buy/pdt_0Nqn3fOmfcDQwcQysr6t5?quantity=1" }
+        {
+          "@type": "Offer",
+          "name": "SpawnSweep",
+          "price": "0",
+          "priceCurrency": "USD"
+        },
+        {
+          "@type": "Offer",
+          "name": "SpawnSweep Pro",
+          "description": "One-time purchase, up to 3 Macs",
+          "price": "9",
+          "priceCurrency": "USD",
+          "url": "https://checkout.dodopayments.com/buy/pdt_0Nqn3fOmfcDQwcQysr6t5?quantity=1"
+        }
       ],
-      "author": { "@type": "Person", "name": "Samir Maikap", "url": "https://github.com/samirmaikap" },
-      "sameAs": ["https://github.com/samirmaikap/spawnsweep"]
+      "author": {
+        "@id": "https://samirmaikap.dev/spawnsweep/#author"
+      },
+      "sameAs": [
+        "https://github.com/samirmaikap/spawnsweep"
+      ],
+      "mainEntityOfPage": {
+        "@id": "https://samirmaikap.dev/spawnsweep/#page"
+      },
+      "featureList": [
+        "Review leftover dev servers, watchers and headless browsers by detected agent session",
+        "Find the process listening on a local port and review stopping it",
+        "Review Git worktree status and size, slim rebuildable folders, and recycle eligible worktrees",
+        "Shut down booted simulators and stop Docker stacks"
+      ]
     },
     {
-      "@type": "FAQPage",
-      "mainEntity": [
-        { "@type": "Question", "name": "How do I find what's using a port on my Mac?",
-          "acceptedAnswer": { "@type": "Answer", "text": "In Terminal, lsof -nP -iTCP:3000 -sTCP:LISTEN shows the process listening on port 3000. SpawnSweep's Ports board lists every localhost listener at once, with its project, git branch, uptime and the agent session that started it, and frees a port in one click." } },
-        { "@type": "Question", "name": "How do I stop the dev servers Claude Code or Codex left running?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Open Sessions. SpawnSweep groups processes by the agent session that started them, so a finished session shows exactly what it left behind: dev servers, watchers, headless browsers, tunnels. Review the cleanup and SpawnSweep stops them gently. With the Claude Code SessionEnd hook installed, this happens on its own when a session ends. Active and pinned sessions are never touched." } },
-        { "@type": "Question", "name": "How do I clean up old git worktrees?",
-          "acceptedAnswer": { "@type": "Answer", "text": "git worktree list shows them and git worktree remove <path> removes one. SpawnSweep's Storage page lists worktrees per repo with their status and size. It can slim a worktree (remove rebuildable folders like node_modules) or recycle a merged one after saving ignored files such as .env, so Restore brings everything back." } },
-        { "@type": "Question", "name": "How do I free disk space used by Xcode simulators?",
-          "acceptedAnswer": { "@type": "Answer", "text": "xcrun simctl delete unavailable removes simulators for runtimes you no longer have. SpawnSweep's Storage page lists simulator devices and Xcode DerivedData by size and removes unused simulator devices with a preview. SpawnSweep Pro's junk cleaner also clears DerivedData." } },
-        { "@type": "Question", "name": "Which AI coding agents does SpawnSweep support?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Claude Code, the Claude desktop app, Codex, Cursor, Gemini and Aider. Processes are matched to the session that started them. Anything else listening on a port still shows up on the Ports board." } },
-        { "@type": "Question", "name": "Can I see what's running from inside Claude Code?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Yes. The SpawnSweep pane plugin shows each agent session with its dev servers, ports and Docker stacks in a side pane next to your chat and refreshes every 30 seconds. A moon with the count of what's running (🌔 4) sits in the footer; click it, or type /spawnsweep, to open the pane. It needs SpawnSweep in Applications. The easiest way to add it is Add to Claude on SpawnSweep's Sessions page, or the Claude Code pane switch in Connections. At the prompt of a Claude Code terminal session, run /plugin install spawnsweep --marketplace samirmaikap/spawnsweep. In the Claude desktop app, click + next to the prompt box, then Plugins, Add marketplace with samirmaikap/spawnsweep, then Add plugin." } },
-        { "@type": "Question", "name": "Is SpawnSweep a CleanMyMac alternative?",
-          "acceptedAnswer": { "@type": "Answer", "text": "For developers, mostly. SpawnSweep cleans what general Mac cleaners don't see: agent sessions, dev servers, busy ports, git worktrees and Docker stacks. SpawnSweep Pro adds the classic cleaning: app and developer caches, logs, old installers, and large & old files. It isn't an antivirus or an app uninstaller." } },
-        { "@type": "Question", "name": "Is SpawnSweep free?",
-          "acceptedAnswer": { "@type": "Answer", "text": "Yes. The app and its source code are free under the MIT license. SpawnSweep Pro, a one-time $9 purchase for up to 3 Macs, unlocks the junk cleaner, large & old files, and Autopilot rules that act on their own." } }
-      ]
+      "@type": "Person",
+      "@id": "https://samirmaikap.dev/spawnsweep/#author",
+      "name": "Samir Maikap",
+      "url": "https://github.com/samirmaikap"
     }
   ]
 }
 </script>
 
-<style>
-:root {
-  --canvas: #F2F6EF; --surface: #FFFFFF; --tint: #E7EEE3; --tint-strong: #DCE6D6;
-  --ink: #263A30; --muted: #586A5E; --line: #DFE6DB;
-  --accent: #0E9F5B; --accent-top: #2CC97A; --on-accent: #0F2418; --accent-text: #08703F;
-  --amber-fill: #F6E8D9; --amber-text: #8E5527;
-  --hl: rgba(255,255,255,.9); --shade: rgba(92,122,98,.14); --drop: rgba(111,140,116,.22);
-  --rim: rgba(255,255,255,.55); --sheen: rgba(255,255,255,.35);
-  --glow-a: rgba(14,159,91,.22); --glow-b: rgba(44,201,122,.18);
-  --sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", system-ui, sans-serif;
-  --mono: ui-monospace, "SF Mono", SFMono-Regular, Menlo, monospace;
-}
-@media (prefers-color-scheme: dark) {
-  :root {
-    --canvas: #1C2821; --surface: #2A392F; --tint: #33463A; --tint-strong: #3A4F40;
-    --ink: #E5EEE9; --muted: #A5B7AB; --line: #46594A;
-    --accent-text: #5BE3A0; --amber-fill: #4A3B26; --amber-text: #EBC395;
-    --hl: rgba(255,255,255,.10); --shade: rgba(0,0,0,.45); --drop: rgba(0,0,0,.45);
-    --rim: rgba(255,255,255,.16); --sheen: rgba(255,255,255,.10);
-    --glow-a: rgba(14,159,91,.20); --glow-b: rgba(44,201,122,.12);
-  }
-}
-
-* { box-sizing: border-box; }
-html { -webkit-text-size-adjust: 100%; }
-body {
-  margin: 0; background: var(--canvas); color: var(--ink);
-  font: 16px/1.55 var(--sans); -webkit-font-smoothing: antialiased;
-}
-a { color: var(--accent-text); text-underline-offset: 3px; }
-a:hover { text-decoration-thickness: 2px; }
-:focus-visible { outline: 2px solid var(--accent-text); outline-offset: 3px; border-radius: 6px; }
-code { font: .9em var(--mono); background: var(--tint); padding: .1em .35em; border-radius: 5px; }
-img, video { max-width: 100%; display: block; }
-.sr { position: absolute; width: 1px; height: 1px; overflow: hidden; clip-path: inset(50%); white-space: nowrap; }
-
-.wrap { width: min(1080px, 100% - 32px); margin-inline: auto; }
-.read > * { max-width: 720px; }
-
-/* Clay surface: inner highlight and shade, a broad soft drop, a thin bright rim and a sheen across the top. */
-.clay {
-  position: relative; background: var(--surface); border-radius: 14px;
-  box-shadow: inset 3px 4px 7px var(--hl), inset -4px -6px 10px var(--shade), 0 14px 30px -10px var(--drop);
-}
-.clay::after {
-  content: ""; position: absolute; inset: 0; border-radius: inherit; pointer-events: none;
-  border: 1px solid var(--rim); background: linear-gradient(180deg, var(--sheen), transparent 38%);
-}
-
-/* Top bar */
-.top { display: flex; align-items: center; justify-content: space-between; padding: 20px 0; }
-.brand { display: flex; align-items: center; gap: 10px; font-weight: 600; font-size: 17px; color: var(--ink); text-decoration: none; }
-.brand img { width: 30px; height: 30px; }
-.top nav { display: flex; gap: 22px; font-size: 15px; }
-.top nav a { color: var(--muted); text-decoration: none; }
-.top nav a:hover { color: var(--ink); }
-
-/* Hero */
-.hero { position: relative; padding: 40px 0 24px; }
-.hero::before {
-  content: ""; position: absolute; inset: -120px 0 0; z-index: -1; pointer-events: none;
-  background:
-    radial-gradient(520px 420px at 72% 22%, var(--glow-a), transparent 70%),
-    radial-gradient(420px 360px at 92% 70%, var(--glow-b), transparent 70%);
-}
-.hero-grid { display: grid; grid-template-columns: 1.05fr .95fr; gap: 56px; align-items: center; }
-.hero-grid > * { min-width: 0; }
-h1 { font-size: clamp(38px, 5.4vw, 60px); line-height: 1.04; letter-spacing: -.03em; font-weight: 600; margin: 0 0 22px; text-wrap: balance; }
-.lead { font-size: 19px; color: var(--muted); margin: 0 0 30px; max-width: 34em; }
-.lead strong { color: var(--ink); font-weight: 600; }
-
-.install { display: flex; align-items: center; gap: 10px; padding: 10px 10px 10px 16px; border-radius: 12px; max-width: 560px; }
-.install code { background: none; padding: 0; flex: 1; overflow-x: auto; white-space: nowrap; font-size: 13.5px; scrollbar-width: none; }
-.install code::-webkit-scrollbar { display: none; }
-.hint { font-size: 14px; color: var(--muted); margin: 10px 0 26px; }
-
-.actions { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
-.btn {
-  display: inline-flex; align-items: center; gap: 8px; height: 44px; padding: 0 18px; border-radius: 9px;
-  font: 600 15px var(--sans); text-decoration: none; cursor: pointer; border: 0;
-}
-.btn-primary {
-  color: var(--on-accent); background: linear-gradient(180deg, var(--accent-top), var(--accent));
-  box-shadow: inset 0 1px 0 rgba(255,255,255,.45), 0 7px 14px -4px rgba(14,159,91,.45);
-}
-.btn-primary:active { box-shadow: inset 0 1px 0 rgba(255,255,255,.3), 0 2px 4px rgba(14,159,91,.3); }
-.btn-quiet { color: var(--ink); background: var(--surface); border: 1px solid var(--line); }
-.btn-quiet:hover { background: var(--tint); }
-.btn-small { height: 34px; padding: 0 12px; font-size: 13.5px; flex: none; }
-
-/* The menu bar demo */
-.demo { position: relative; }
-.menubar {
-  display: flex; justify-content: flex-end; align-items: center; gap: 16px; height: 30px; padding: 0 14px;
-  font-size: 13px; color: var(--ink); border-radius: 10px 10px 0 0;
-  background: color-mix(in srgb, var(--surface) 55%, transparent);
-  -webkit-backdrop-filter: blur(20px) saturate(1.4); backdrop-filter: blur(20px) saturate(1.4);
-  border: 1px solid var(--rim); border-bottom: 0;
-}
-.menubar .moon { display: grid; place-items: center; width: 30px; height: 22px; border-radius: 5px; background: var(--tint-strong); }
-.menubar .moon svg { width: 15px; height: 15px; }
-.popover {
-  margin: 8px 0 0 auto; width: min(380px, 100%); border-radius: 22px; padding: 18px;
-  background: color-mix(in srgb, var(--surface) 62%, transparent);
-  -webkit-backdrop-filter: blur(24px) saturate(1.4); backdrop-filter: blur(24px) saturate(1.4);
-}
-.pop-head { display: flex; gap: 12px; align-items: center; margin-bottom: 14px; }
-.pop-head img { width: 36px; height: 36px; }
-.pop-head strong { display: block; font-size: 15px; }
-.pop-head span { display: block; font-size: 13px; line-height: 1.35; color: var(--muted); }
-.group { background: var(--surface); border-radius: 12px; padding: 10px 12px; margin-bottom: 10px; box-shadow: 0 1px 0 var(--line); }
-.g-head { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 4px; font-size: 13px; }
-.g-head b { font-weight: 600; margin-right: 2px; }
-.badge { font-size: 11.5px; padding: 1px 7px; border-radius: 6px; background: var(--tint); color: var(--muted); }
-.badge.ended { background: var(--amber-fill); color: var(--amber-text); }
-.group ul { list-style: none; margin: 0; padding: 0; }
-.group li {
-  display: grid; grid-template-columns: 1fr auto auto; gap: 10px; align-items: center;
-  font-size: 13px; padding: 5px 0; border-top: 1px solid var(--line);
-  max-height: 40px; overflow: hidden; transition: opacity .2s ease, max-height .24s ease, padding .24s ease, border-color .24s ease;
-}
-.group li:first-child { border-top: 0; }
-.group .port { font-family: var(--mono); color: var(--accent-text); font-size: 12px; }
-.group .mem { color: var(--muted); font-variant-numeric: tabular-nums; min-width: 52px; text-align: right; }
-.swept .group li { opacity: 0; max-height: 0; padding-block: 0; border-color: transparent; }
-.pop-foot { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 6px; }
-.pop-foot p { margin: 0; font-size: 13px; color: var(--muted); }
-.swept .pop-foot p { color: var(--ink); }
-.demo-note { font-size: 13px; color: var(--muted); text-align: right; margin: 10px 4px 0; }
-
-/* Sections */
-section { padding: 64px 0; }
-h2 { font-size: clamp(28px, 3.4vw, 36px); line-height: 1.15; letter-spacing: -.02em; font-weight: 600; margin: 0 0 12px; }
-.sub { color: var(--muted); font-size: 17px; margin: 0 0 30px; max-width: 40em; }
-
-.features { list-style: none; margin: 0; padding: 10px 24px; display: grid; grid-template-columns: 1fr 1fr; column-gap: 40px; }
-.features li { display: grid; grid-template-columns: 36px 1fr; gap: 14px; padding: 16px 0; border-top: 1px solid var(--line); }
-.features li:nth-child(-n+2) { border-top: 0; }
-.tile { width: 36px; height: 36px; border-radius: 10px; display: grid; place-items: center; background: var(--tint); color: var(--accent-text); }
-.tile svg { width: 19px; height: 19px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
-.features h3 { font-size: 16px; margin: 0 0 2px; font-weight: 600; }
-.features p { margin: 0; color: var(--muted); font-size: 15px; }
-.shots { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin-top: 28px; }
-.shots img { display: block; width: 100%; height: auto; border-radius: 12px; border: 1px solid var(--line); }
-.pro-mark { font-size: 12px; font-weight: 600; color: var(--accent-text); margin-left: 6px; }
-
-.video { width: 100%; height: auto; aspect-ratio: 16 / 9; background: var(--tint); border-radius: 12px; border: 1px solid var(--line); }
-
-.table-panel { padding: 6px; overflow-x: auto; }
-table { width: 100%; border-collapse: collapse; font-size: 15px; min-width: 720px; }
-th, td { text-align: left; vertical-align: top; padding: 14px 16px; border-top: 1px solid var(--line); }
-thead th { border-top: 0; font-weight: 600; color: var(--muted); font-size: 14px; }
-tbody th { font-weight: 600; width: 22%; }
-td:last-child, thead th:last-child { background: color-mix(in srgb, var(--tint) 70%, transparent); color: var(--ink); }
-thead th:last-child { color: var(--accent-text); border-radius: 10px 10px 0 0; }
-tbody tr:last-child td:last-child { border-radius: 0 0 10px 10px; }
-td { color: var(--muted); }
-
-.pro { display: grid; grid-template-columns: 1fr 1fr; gap: 40px; padding: 36px; border-radius: 20px; align-items: center; }
-.pro ul { margin: 0; padding-left: 20px; color: var(--muted); }
-.pro li { margin: 8px 0; }
-.pro li strong { color: var(--ink); font-weight: 600; }
-.price { font-size: 15px; color: var(--muted); margin: 0 0 22px; }
-
-.safety { list-style: none; padding: 0; margin: 0; display: grid; gap: 14px; }
-.safety li { padding-left: 28px; position: relative; color: var(--muted); }
-.safety li::before {
-  content: ""; position: absolute; left: 0; top: .45em; width: 14px; height: 8px;
-  border-left: 2px solid var(--accent-text); border-bottom: 2px solid var(--accent-text); transform: rotate(-45deg);
-}
-.safety strong { color: var(--ink); font-weight: 600; }
-
-.faq h3 { font-size: 18px; margin: 34px 0 8px; font-weight: 600; letter-spacing: -.01em; }
-.faq p { margin: 0; color: var(--muted); }
-.faq strong { color: var(--ink); font-weight: 600; }
-
-footer { padding: 40px 0 56px; border-top: 1px solid var(--line); font-size: 14px; color: var(--muted); }
-footer .wrap { display: flex; flex-wrap: wrap; gap: 12px 28px; justify-content: space-between; }
-footer p { margin: 0; }
-
-@media (max-width: 860px) {
-  .hero-grid, .pro { grid-template-columns: 1fr; }
-  .hero-grid { gap: 40px; }
-  .features { grid-template-columns: 1fr; padding: 4px 18px; }
-  .features li:nth-child(2) { border-top: 1px solid var(--line); }
-  .shots { grid-template-columns: 1fr; }
-  .popover { margin-inline: auto; }
-  .pro { padding: 24px; gap: 24px; }
-  .top nav a:not(.gh) { display: none; }
-  section { padding: 48px 0; }
-}
-@media (prefers-reduced-motion: reduce) { .group li { transition: none; } }
-@media (prefers-reduced-transparency: reduce) {
-  .popover, .menubar { background: var(--surface); -webkit-backdrop-filter: none; backdrop-filter: none; }
-}
-</style>
+<link rel="stylesheet" href="site.css">
 </head>
 <body>
 
@@ -283,6 +113,7 @@ footer p { margin: 0; }
     <a href="#compare">Compare</a>
     <a href="#pro">Pro</a>
     <a href="#faq">FAQ</a>
+    <a href="#guides">Guides</a>
     <a class="gh" href="https://github.com/samirmaikap/spawnsweep">GitHub</a>
   </nav>
 </header>
@@ -292,7 +123,7 @@ footer p { margin: 0; }
   <div class="wrap hero-grid">
     <div>
       <h1>The Mac cleaner for AI coding agents</h1>
-      <p class="lead"><strong>SpawnSweep</strong> is a free, open-source menu bar app. It finds the dev servers, busy ports, simulators and git worktrees that Claude Code, Codex and Cursor leave running, tells you which session started them, and puts them away with a preview first.</p>
+      <p class="lead"><strong>SpawnSweep</strong> is a free, open-source menu bar app. It finds leftover dev servers, busy ports, simulators, Docker stacks and Git worktrees. See what Claude Code, Codex and Cursor left behind, then review what to stop or remove.</p>
 
       <div class="install clay">
         <code id="cmd">curl -fsSL https://raw.githubusercontent.com/samirmaikap/spawnsweep/main/scripts/install.sh | bash</code>
@@ -429,7 +260,7 @@ footer p { margin: 0; }
     <h2>Deletes as little as possible, and asks first</h2>
     <p class="sub">Everything stays on your Mac. No account, no telemetry. Pro only checks its license key, about once a week.</p>
     <ul class="safety">
-      <li><strong>Every change starts with a preview.</strong> Active and pinned sessions are never swept.</li>
+      <li><strong>Manual cleanups start with a preview.</strong> Session sweeps skip active and pinned sessions.</li>
       <li><strong>Processes are stopped gently:</strong> TERM, up to 10 seconds, then KILL. Never outside your user or inside <code>/Applications</code>.</li>
       <li><strong>Slim removes only folders git ignores by name,</strong> like <code>node_modules</code> and <code>.next</code>, never a folder with tracked files.</li>
       <li><strong>Recycle saves ignored files that can't be rebuilt,</strong> like <code>.env</code> and local databases, before removing a worktree. Restore brings everything back.</li>
@@ -440,13 +271,13 @@ footer p { margin: 0; }
 
 <section id="faq" class="faq">
   <div class="wrap read">
-    <h2>Questions</h2>
+    <h2>Frequently asked questions</h2>
 
     <h3>How do I find what's using a port on my Mac?</h3>
     <p>In Terminal, <code>lsof -nP -iTCP:3000 -sTCP:LISTEN</code> shows the process listening on port 3000. SpawnSweep's <strong>Ports board</strong> lists every localhost listener at once, with its project, git branch, uptime and the agent session that started it, and frees a port in one click.</p>
 
     <h3>How do I stop the dev servers Claude Code or Codex left running?</h3>
-    <p>Open <strong>Sessions</strong>. SpawnSweep groups processes by the agent session that started them, so a finished session shows exactly what it left behind: dev servers, watchers, headless browsers, tunnels. Review the cleanup and SpawnSweep stops them gently. With the Claude Code SessionEnd hook installed, this happens on its own when a session ends. Active and pinned sessions are never touched.</p>
+    <p>Open <strong>Sessions</strong>. SpawnSweep groups processes by the agent session that started them, so a finished session shows exactly what it left behind: dev servers, watchers, headless browsers, tunnels. Review the cleanup and SpawnSweep stops them gently. The optional Claude Code SessionEnd hook can automatically stop matched processes when a session ends. Session sweeps skip active and pinned sessions.</p>
 
     <h3>How do I clean up old git worktrees?</h3>
     <p><code>git worktree list</code> shows them and <code>git worktree remove &lt;path&gt;</code> removes one. SpawnSweep's <strong>Storage</strong> page lists worktrees per repo with their status and size. It can slim a worktree (remove rebuildable folders like <code>node_modules</code>) or recycle a merged one after saving ignored files such as <code>.env</code>, so Restore brings everything back.</p>
@@ -455,7 +286,7 @@ footer p { margin: 0; }
     <p><code>xcrun simctl delete unavailable</code> removes simulators for runtimes you no longer have. SpawnSweep's <strong>Storage</strong> page lists simulator devices and Xcode DerivedData by size and removes unused simulator devices with a preview. SpawnSweep Pro's junk cleaner also clears DerivedData.</p>
 
     <h3>Which AI coding agents does SpawnSweep support?</h3>
-    <p>Claude Code, the Claude desktop app, Codex, Cursor, Gemini and Aider. Processes are matched to the session that started them. Anything else listening on a port still shows up on the Ports board.</p>
+    <p>Claude Code, the Claude desktop app, Codex, Cursor, Gemini CLI and Aider. SpawnSweep associates processes with detected sessions when it can identify them. Anything else listening on a port still shows up on the Ports board.</p>
 
     <h3 id="claude-pane">Can I see what's running from inside Claude Code?</h3>
     <p>Yes. The SpawnSweep pane plugin shows each agent session with its dev servers, ports and Docker stacks in a side pane next to your chat and refreshes every 30 seconds. A moon with the count of what's running (🌔 4) sits in the footer; click it, or type /spawnsweep, to open the pane. It needs SpawnSweep in Applications. The easiest way to add it is Add to Claude on SpawnSweep's Sessions page, or the Claude Code pane switch in Connections. At the prompt of a Claude Code terminal session, run <code>/plugin install spawnsweep --marketplace samirmaikap/spawnsweep</code>. In the Claude desktop app, click <strong>+</strong> next to the prompt box, then <strong>Plugins</strong>, <strong>Add marketplace</strong> with <code>samirmaikap/spawnsweep</code>, then <strong>Add plugin</strong>.</p>
@@ -465,6 +296,18 @@ footer p { margin: 0; }
 
     <h3>Is SpawnSweep free?</h3>
     <p>Yes. The app and its source code are free under the MIT license. SpawnSweep Pro, a one-time $9 purchase for up to 3 Macs, unlocks the junk cleaner, large &amp; old files, and Autopilot rules that act on their own.</p>
+  </div>
+</section>
+<section id="guides">
+  <div class="wrap read">
+    <h2>Mac cleanup guides</h2>
+    <ul>
+      <li><a href="guides/port-3000-already-in-use-mac/">Find and free port 3000 on macOS</a></li>
+      <li><a href="guides/stop-leftover-ai-agent-dev-servers-mac/">Stop dev servers left running by Claude Code or Codex</a></li>
+      <li><a href="guides/clean-up-git-worktrees-mac/">Clean up old Git worktrees and keep local files</a></li>
+      <li><a href="guides/clean-up-xcode-simulators-mac/">Shut down iOS simulators and reclaim disk space</a></li>
+      <li><a href="guides/stop-leftover-docker-stacks-mac/">Stop leftover Docker Compose stacks on macOS</a></li>
+    </ul>
   </div>
 </section>
 </main>

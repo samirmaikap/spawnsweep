@@ -1,0 +1,91 @@
+{% assign origin = "https://samirmaikap.dev" -%}
+{% assign home = origin | append: "/spawnsweep/" -%}
+{% assign canonical = origin | append: "/spawnsweep" | append: page.url -%}
+{% assign title = page.title | append: " | SpawnSweep" -%}
+{% assign image = home | append: "images/og.png" -%}
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{{ title | escape }}</title>
+<meta name="description" content="{{ page.description | escape }}">
+<link rel="canonical" href="{{ canonical }}">
+<meta name="color-scheme" content="light dark">
+<meta name="theme-color" content="#F2F6EF" media="(prefers-color-scheme: light)">
+<meta name="theme-color" content="#1C2821" media="(prefers-color-scheme: dark)">
+<link rel="icon" type="image/png" href="../../images/icon.png">
+<link rel="stylesheet" href="../../site.css">
+<meta property="og:type" content="article">
+<meta property="og:site_name" content="SpawnSweep">
+<meta property="og:url" content="{{ canonical }}">
+<meta property="og:title" content="{{ title | escape }}">
+<meta property="og:description" content="{{ page.description | escape }}">
+<meta property="og:image" content="{{ image }}">
+<meta property="og:image:width" content="1280">
+<meta property="og:image:height" content="640">
+<meta property="og:image:alt" content="SpawnSweep, the macOS menu bar cleaner for AI coding agents">
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="{{ title | escape }}">
+<meta name="twitter:description" content="{{ page.description | escape }}">
+<meta name="twitter:image" content="{{ image }}">
+<meta name="twitter:image:alt" content="SpawnSweep, the macOS menu bar cleaner for AI coding agents">
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@graph": [
+    {
+      "@type": "TechArticle",
+      "@id": {{ canonical | append: "#article" | jsonify }},
+      "mainEntityOfPage": {{ canonical | jsonify }},
+      "headline": {{ page.title | jsonify }},
+      "description": {{ page.description | jsonify }},
+      "inLanguage": "en",
+      "author": {
+        "@type": "Person",
+        "@id": "{{ home }}#author",
+        "name": "Samir Maikap",
+        "url": "https://github.com/samirmaikap"
+      },
+      "mentions": { "@id": "{{ home }}#app" }
+    },
+    {
+      "@type": "BreadcrumbList",
+      "@id": {{ canonical | append: "#breadcrumbs" | jsonify }},
+      "itemListElement": [
+        { "@type": "ListItem", "position": 1, "name": "SpawnSweep", "item": "{{ home }}" },
+        { "@type": "ListItem", "position": 2, "name": {{ page.title | jsonify }}, "item": {{ canonical | jsonify }} }
+      ]
+    }
+  ]
+}
+</script>
+</head>
+<body>
+<header class="wrap top">
+  <a class="brand" href="../../"><img src="../../images/icon.png" alt="" width="30" height="30">SpawnSweep</a>
+  <nav aria-label="Main">
+    <a class="gh" href="https://github.com/samirmaikap/spawnsweep">GitHub</a>
+  </nav>
+</header>
+<main class="wrap guide">
+  <nav aria-label="Breadcrumb"><a href="../../">SpawnSweep</a> / <span aria-current="page">{{ page.title | escape }}</span></nav>
+  <article>
+    <h1>{{ page.title | escape }}</h1>
+    <p class="byline">From <a href="https://github.com/samirmaikap/spawnsweep">the SpawnSweep project</a>, maintained by <a href="https://github.com/samirmaikap">Samir Maikap</a>.</p>
+    {{ content }}
+  </article>
+  <div class="actions">
+    <a class="btn btn-primary" href="https://github.com/samirmaikap/spawnsweep/releases/latest/download/SpawnSweep.zip">Download for Mac</a>
+    <a class="btn btn-quiet" href="../../#guides">All Mac cleanup guides</a>
+  </div>
+  <p class="hint">Free, open-source app for macOS 14 or later on Apple silicon. <a href="../../">Install details</a></p>
+</main>
+<footer>
+  <div class="wrap">
+    <p>Made by <a href="https://github.com/samirmaikap">Samir Maikap</a>. Source code under the <a href="https://github.com/samirmaikap/spawnsweep/blob/main/LICENSE">MIT license</a>.</p>
+    <p><a href="https://github.com/samirmaikap/spawnsweep/releases/latest">Releases</a> &nbsp; <a href="https://github.com/samirmaikap/spawnsweep/issues">Report a bug</a></p>
+  </div>
+</footer>
+</body>
+</html>

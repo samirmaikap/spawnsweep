@@ -1,4 +1,11 @@
+---
+layout: null
+---
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
-  <url><loc>https://samirmaikap.dev/spawnsweep/</loc><lastmod>2026-11-16</lastmod></url>
+  <url><loc>https://samirmaikap.dev/spawnsweep/</loc></url>
+{% assign guides = site.pages | where: "layout", "guide" | sort: "url" -%}
+{% for guide in guides -%}
+  <url><loc>https://samirmaikap.dev/spawnsweep{{ guide.url | xml_escape }}</loc></url>
+{% endfor -%}
 </urlset>

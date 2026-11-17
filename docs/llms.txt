@@ -1,6 +1,6 @@
 # SpawnSweep
 
-> SpawnSweep is a free, open-source macOS menu bar app that cleans up after AI coding agents. It finds the dev servers, busy ports, simulators, Docker stacks and git worktrees that Claude Code, Codex, Cursor, Gemini and Aider leave running, shows which agent session started them, and cleans them up with a preview first.
+> SpawnSweep is a free, open-source macOS menu bar app for cleaning up after AI coding agents. It finds leftover dev servers, busy ports, Git worktrees, simulators and Docker stacks. Resources are associated with Claude Code, Codex, Cursor, Gemini CLI or Aider sessions when detected. Manual cleanup starts with a preview.
 
 - Platform: macOS 14 or later on Apple silicon. Native SwiftUI.
 - Price: free and open source (MIT). SpawnSweep Pro is a one-time $9 purchase for up to 3 Macs and adds a junk cleaner, large & old files, and Autopilot rules that act on their own.
@@ -14,6 +14,14 @@
 - [FAQ](https://samirmaikap.dev/spawnsweep/#faq): freeing a port on a Mac, stopping dev servers agents left running, cleaning git worktrees and Xcode simulators
 - [README](https://github.com/samirmaikap/spawnsweep#readme): features, install, safety rules, helpers (MCP server, Claude Code SessionEnd hook)
 - [Latest release](https://github.com/samirmaikap/spawnsweep/releases/latest): download and release notes
+
+## Mac cleanup guides
+
+- [Free port 3000 on macOS](https://samirmaikap.dev/spawnsweep/guides/port-3000-already-in-use-mac/): find the listener and identify its project before stopping it
+- [Stop leftover AI agent dev servers](https://samirmaikap.dev/spawnsweep/guides/stop-leftover-ai-agent-dev-servers-mac/): review resources by session and understand the optional Claude Code SessionEnd hook
+- [Clean up old Git worktrees](https://samirmaikap.dev/spawnsweep/guides/clean-up-git-worktrees-mac/): preserve local changes and ignored files
+- [Clean up unused Xcode simulators](https://samirmaikap.dev/spawnsweep/guides/clean-up-xcode-simulators-mac/): shut down a running device or reclaim disk space
+- [Stop leftover Docker Compose stacks](https://samirmaikap.dev/spawnsweep/guides/stop-leftover-docker-stacks-mac/): preserve containers and volumes when stopping a local project
 
 ## Optional
 

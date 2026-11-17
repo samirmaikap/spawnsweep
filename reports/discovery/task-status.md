@@ -17,3 +17,22 @@ Format: `ID | status | owner | branch/PR | evidence | blocker | next action | la
 | DIST-01 | BACKLOG | agent | none | none | TRUST-01 | Check Homebrew cask rules after a notarized release | 2026-11-16 |
 | DIST-02 | BACKLOG | owner | none | Competing CLIs are listed on awesome.ecosyste.ms and similar lists | Owner approval for every submission | Research relevant curated lists | 2026-11-16 |
 | MEASURE-01 | IN_PROGRESS | agent | none | Baseline 0/10 queries | Search Console access | Re-run the same 10 queries weekly | 2026-11-16 |
+
+## Website and README update, 2026-11-17
+
+The live GitHub Pages project serves `/docs` from `main` at [samirmaikap.dev/spawnsweep](https://samirmaikap.dev/spawnsweep/). Both the HTTP URL and the former GitHub Pages URL lead to the HTTPS canonical. The host's [root sitemap](https://samirmaikap.dev/sitemap.xml) already lists the product homepage. The root robots policy allows public access. Direct requests with Googlebot, Bingbot, OAI-SearchBot, ChatGPT-User, PerplexityBot and Perplexity-User user-agent strings all received the same HTML and HTTP 200 as a browser, with no `X-Robots-Tag`.
+
+The revised project sitemap lists the homepage and five guides. Each guide addresses a distinct non-branded query and is linked from the homepage, GitHub README and `llms.txt`. The homepage describes the app through one SoftwareApplication entity. The guide pages use TechArticle and BreadcrumbList markup, and the homepage FAQs remain visible in HTML. The root robots file belongs to the host site. Google Search uses Googlebot for AI Overviews, and Google-Extended controls some Gemini grounding uses. ChatGPT Search and Perplexity use their respective search crawlers. [Google AI features](https://developers.google.com/search/docs/appearance/ai-features) · [Google crawlers and tokens](https://developers.google.com/crawling/docs/crawlers-fetchers/google-common-crawlers) · [OpenAI crawlers](https://developers.openai.com/api/docs/bots) · [Perplexity crawlers](https://docs.perplexity.ai/docs/resources/perplexity-crawlers)
+
+After deployment, verify the five guide URLs and project sitemap on the public host. Submit [the project sitemap](https://samirmaikap.dev/spawnsweep/sitemap.xml) in Search Console and track impressions for non-branded searches. Check the prompts below in Google Search, ChatGPT Search, Gemini and Perplexity. Record the date, engine, whether SpawnSweep is mentioned, and which URL is cited. A search result, an AI mention, and a citation are distinct outcomes.
+
+| Search prompt | Landing page |
+|---|---|
+| macOS menu bar cleaner for AI coding agents | Product homepage |
+| port 3000 already in use on Mac after Claude Code | Port 3000 guide |
+| stop leftover Claude Code or Codex dev servers on Mac | Agent session cleanup guide |
+| clean up old Git worktrees without losing .env files | Git worktree guide |
+| shut down unused Xcode simulators to free Mac disk space | Xcode simulator guide |
+| stop Docker Compose projects left running by coding agents | Docker Compose guide |
+
+A pre-deployment web search for the product category surfaced [OpenMacApps' SpawnSweep listing](https://openmacapps.com/apps/spawnsweep/). Treat that as one search observation. Record post-deployment citation checks against the live URLs once crawlers can retrieve them.

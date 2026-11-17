@@ -6,7 +6,7 @@
 
 <p align="center">
   <strong>The macOS menu bar cleaner for AI coding agents.</strong><br>
-  See what Claude Code, Codex and Cursor left running on your Mac, and put it away without losing a line of work.
+  Find leftover dev servers from Claude Code, Codex and Cursor, free busy ports, and review Git worktrees, simulators and Docker stacks.
 </p>
 
 <p align="center">
@@ -32,20 +32,21 @@
   <a href="#highlights">Highlights</a> ·
   <a href="#inside-claude">Inside Claude</a> ·
   <a href="#spawnsweep-pro">Pro</a> ·
+  <a href="#mac-cleanup-guides">Cleanup guides</a> ·
   <a href="#safety">Safety</a> ·
   <a href="#faq">FAQ</a>
 </p>
 
 ---
 
-## Your agents start things. Nobody stops them.
+## Clean up after AI coding agents on macOS
 
 - `Error: Port 3000 is already in use`, again.
 - Yesterday's `next dev`, `vite` and `vitest --watch`, still running from sessions you closed hours ago.
 - An iPhone simulator holding 1.6 GB of memory since lunch.
 - A hundred git worktrees, each with its own `node_modules`.
 
-**SpawnSweep is a free, open-source Mac app that cleans up after AI coding agents.** It finds the dev servers, busy ports, simulators, Docker stacks and git worktrees that Claude Code, Codex, Cursor, Gemini and Aider leave behind, tells you which session started each one, and puts them away with a preview first, every time.
+**SpawnSweep is a free, open-source Mac app that cleans up after AI coding agents.** It groups detected resources by agent session when it can identify their owner. Review what to stop or remove from Claude Code, the Claude desktop app, Codex, Cursor, Gemini CLI and Aider sessions.
 
 Native SwiftUI for macOS 14 or later on Apple silicon. Free and open source (MIT); SpawnSweep Pro is a one-time $9 for up to 3 Macs. Everything stays on your Mac. No account, no telemetry.
 
@@ -90,6 +91,14 @@ xattr -dr com.apple.quarantine /Applications/SpawnSweep.app
 - **Safe by design.** A preview before every change, gentle stops, and a log of every change with its way back. [The rules](#safety).
 
 The menu bar shows what's running right now, memory used, disk free, and one button to put leftovers away.
+
+## Mac cleanup guides
+
+- [Port 3000 already in use on Mac](https://samirmaikap.dev/spawnsweep/guides/port-3000-already-in-use-mac/) — identify the listener and stop the right process.
+- [Stop leftover Claude Code and Codex dev servers](https://samirmaikap.dev/spawnsweep/guides/stop-leftover-ai-agent-dev-servers-mac/) — review dev servers, watchers, headless browsers and tunnels by session.
+- [Clean up old Git worktrees](https://samirmaikap.dev/spawnsweep/guides/clean-up-git-worktrees-mac/) — check local changes and preserve ignored files such as `.env`.
+- [Clean up unused Xcode simulators](https://samirmaikap.dev/spawnsweep/guides/clean-up-xcode-simulators-mac/) — shut down booted devices or remove unused devices to reclaim disk space.
+- [Stop leftover Docker Compose stacks](https://samirmaikap.dev/spawnsweep/guides/stop-leftover-docker-stacks-mac/) — stop a local project while keeping its volumes.
 
 ## Inside Claude
 
@@ -140,7 +149,7 @@ The official download scans for free, so you can see what Pro would clean before
 
 SpawnSweep deletes as little as possible and asks first.
 
-- Every change starts with a preview. Active and pinned sessions are never swept.
+- Manual cleanups start with a preview. Session sweeps skip active and pinned sessions.
 - Processes are checked by start time before they're signalled, stopped gently (TERM, up to 10 seconds, then KILL), and never outside your user or inside `/Applications`.
 - **Slim** removes only folders git ignores by their own name (`node_modules`, `.next`, `dist`, …), never a folder that holds tracked files, and never in a worktree something is running in.
 - **Recycle** saves every ignored file that can't be rebuilt (`.env`, keys, local databases) before `git worktree remove` (never `--force`). Branches stay in git and Restore brings everything back.
@@ -162,7 +171,7 @@ In Terminal, `lsof -nP -iTCP:3000 -sTCP:LISTEN` shows the process listening on p
 
 ### How do I stop the dev servers Claude Code or Codex left running?
 
-Open **Sessions**. SpawnSweep groups processes by the agent session that started them, so a finished session shows exactly what it left behind: dev servers, watchers, headless browsers, tunnels. Review the cleanup and SpawnSweep stops them gently. With the Claude Code SessionEnd hook installed, this happens on its own when a session ends. Active and pinned sessions are never touched.
+Open **Sessions**. SpawnSweep groups processes by the agent session that started them, so a finished session shows exactly what it left behind: dev servers, watchers, headless browsers, tunnels. Review the cleanup and SpawnSweep stops them gently. The optional Claude Code SessionEnd hook can stop matched processes automatically when a session ends. Session sweeps skip active and pinned sessions.
 
 ### How do I clean up old git worktrees?
 
